@@ -1,4 +1,4 @@
-export type BenefitType = 'vr' | 'va' | 'transporte' | 'vale_gas' | 'ajuda_custo';
+export type BenefitType = 'autoescola' | 'farmacia' | 'oficina' | 'vale_gas' | 'papelaria' | 'otica' | 'outros';
 
 export type BenefitStatus = 'aberto' | 'analise' | 'aprovado' | 'negado' | 'concluido';
 
@@ -47,11 +47,13 @@ export interface Log {
 }
 
 export const benefitTypeLabels: Record<BenefitType, string> = {
-  vr: 'Vale Refeição',
-  va: 'Vale Alimentação',
-  transporte: 'Vale Transporte',
+  autoescola: 'Autoescola',
+  farmacia: 'Farmácia',
+  oficina: 'Oficina',
   vale_gas: 'Vale Gás',
-  ajuda_custo: 'Ajuda de Custo',
+  papelaria: 'Papelaria',
+  otica: 'Ótica',
+  outros: 'Outros',
 };
 
 export const statusLabels: Record<BenefitStatus, string> = {

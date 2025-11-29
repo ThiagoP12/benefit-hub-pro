@@ -19,7 +19,7 @@ export const mockUsers: User[] = [
   { id: 8, name: 'Lucas Almeida', cpf: '89012345678', phone: '21999008901', unitId: 2, role: 'colaborador', createdAt: new Date('2023-08-25') },
 ];
 
-const benefitTypes: BenefitType[] = ['vr', 'va', 'transporte', 'vale_gas', 'ajuda_custo'];
+const benefitTypes: BenefitType[] = ['autoescola', 'farmacia', 'oficina', 'vale_gas', 'papelaria', 'otica', 'outros'];
 const statuses: BenefitStatus[] = ['aberto', 'analise', 'aprovado', 'negado', 'concluido'];
 
 export const mockBenefitRequests: BenefitRequest[] = Array.from({ length: 35 }, (_, i) => {
@@ -42,6 +42,77 @@ export const mockBenefitRequests: BenefitRequest[] = Array.from({ length: 35 }, 
     updatedAt: new Date(createdDate.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000),
   };
 }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+// Payment Receipts Interface
+export interface PaymentReceipt {
+  id: number;
+  userId: number;
+  user?: User;
+  month: string;
+  year: number;
+  grossSalary: number;
+  netSalary: number;
+  deductions: number;
+  benefits: number;
+  pdfUrl: string;
+  createdAt: Date;
+}
+
+// Mock Payment Receipts
+export const mockPaymentReceipts: PaymentReceipt[] = [
+  {
+    id: 1,
+    userId: 1,
+    user: mockUsers[0],
+    month: 'Janeiro',
+    year: 2024,
+    grossSalary: 5000,
+    netSalary: 4200,
+    deductions: 800,
+    benefits: 500,
+    pdfUrl: '/recibos/2024-01-ana-silva.pdf',
+    createdAt: new Date('2024-02-05'),
+  },
+  {
+    id: 2,
+    userId: 1,
+    user: mockUsers[0],
+    month: 'Dezembro',
+    year: 2023,
+    grossSalary: 5000,
+    netSalary: 4150,
+    deductions: 850,
+    benefits: 500,
+    pdfUrl: '/recibos/2023-12-ana-silva.pdf',
+    createdAt: new Date('2024-01-05'),
+  },
+  {
+    id: 3,
+    userId: 2,
+    user: mockUsers[1],
+    month: 'Janeiro',
+    year: 2024,
+    grossSalary: 4500,
+    netSalary: 3800,
+    deductions: 700,
+    benefits: 450,
+    pdfUrl: '/recibos/2024-01-carlos-santos.pdf',
+    createdAt: new Date('2024-02-05'),
+  },
+  {
+    id: 4,
+    userId: 4,
+    user: mockUsers[3],
+    month: 'Janeiro',
+    year: 2024,
+    grossSalary: 3800,
+    netSalary: 3200,
+    deductions: 600,
+    benefits: 400,
+    pdfUrl: '/recibos/2024-01-joao-pereira.pdf',
+    createdAt: new Date('2024-02-05'),
+  },
+];
 
 export const getDashboardStats = () => {
   const total = mockBenefitRequests.length;
