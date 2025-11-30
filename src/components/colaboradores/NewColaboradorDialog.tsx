@@ -143,7 +143,15 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
       onSuccess?.();
     } catch (error: any) {
       console.error('Erro ao cadastrar colaborador:', error);
-      toast.error(error.message || 'Erro ao cadastrar colaborador');
+      
+      // Tratamento específico para CPF duplicado
+      if (error?.message?.includes('profiles_cpf_key') || 
+          error?.code === '23505' || 
+          error?.message?.includes('duplicate key')) {
+        toast.error('Este CPF já está cadastrado no sistema');
+      } else {
+        toast.error(error.message || 'Erro ao cadastrar colaborador');
+      }
     } finally {
       setLoading(false);
     }
