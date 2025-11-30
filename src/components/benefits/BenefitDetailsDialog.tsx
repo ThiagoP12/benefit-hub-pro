@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { FileUp, Send, CheckCircle, XCircle } from "lucide-react";
 import { benefitTypeLabels, type BenefitStatus } from "@/types/benefits";
+import { formatCpf } from "@/lib/utils";
 
 interface BenefitDetailsDialogProps {
   open: boolean;
@@ -213,7 +214,7 @@ ${status === "recusada" && rejectionReason ? `\n❗ *Motivo:* ${rejectionReason}
             </div>
             <div>
               <Label className="text-muted-foreground">CPF</Label>
-              <p className="font-semibold">{request.profiles?.cpf || "N/A"}</p>
+              <p className="font-semibold">{request.profiles?.cpf ? formatCpf(request.profiles.cpf) : "N/A"}</p>
             </div>
             <div>
               <Label className="text-muted-foreground">Unidade</Label>
@@ -229,7 +230,9 @@ ${status === "recusada" && rejectionReason ? `\n❗ *Motivo:* ${rejectionReason}
             </div>
             <div>
               <Label className="text-muted-foreground">Status Atual</Label>
-              <StatusBadge status={status} />
+              <div className="mt-1">
+                <StatusBadge status={status} />
+              </div>
             </div>
           </div>
 
