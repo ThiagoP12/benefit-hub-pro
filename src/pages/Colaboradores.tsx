@@ -4,9 +4,12 @@ import { roleLabels, UserRole } from '@/types/benefits';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Plus, Phone, Building2, Mail } from 'lucide-react';
+import { Search, Building2, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { NewColaboradorDialog } from '@/components/colaboradores/NewColaboradorDialog';
+import { ImportCSVDialog } from '@/components/colaboradores/ImportCSVDialog';
+import { PaginationControls } from '@/components/ui/pagination-controls';
 
 interface Profile {
   id: string;
@@ -26,6 +29,8 @@ export default function Colaboradores() {
   const [search, setSearch] = useState('');
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   useEffect(() => {
     fetchProfiles();
@@ -61,6 +66,22 @@ export default function Colaboradores() {
     return role === 'admin' ? 'default' : 'secondary';
   };
 
+  const totalPages = Math.ceil(filteredProfiles.length / itemsPerPage);
+  const paginatedProfiles = filteredProfiles.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleItemsPerPageChange = (items: number) => {
+    setItemsPerPage(items);
+    setCurrentPage(1);
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -72,10 +93,10 @@ export default function Colaboradores() {
               Gerencie os colaboradores cadastrados
             </p>
           </div>
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
-            Novo Colaborador
-          </Button>
+          <div className="flex gap-3">
+            <ImportCSVDialog onSuccess={fetchProfiles} />
+            <NewColaboradorDialog onSuccess={fetchProfiles} />
+          </div>
         </div>
 
         {/* Search */}
@@ -109,12 +130,12 @@ export default function Colaboradores() {
                 </div>
               </div>
             ))
-          ) : filteredProfiles.length === 0 ? (
+          ) : paginatedProfiles.length === 0 ? (
             <div className="col-span-full text-center py-12 text-muted-foreground">
               Nenhum colaborador encontrado
             </div>
           ) : (
-            filteredProfiles.map((profile) => (
+            paginatedProfiles.map((profile) => (
               <div
                 key={profile.id}
                 className="rounded-xl border border-border bg-card p-5 hover:shadow-md transition-all duration-200 animate-fade-in"
@@ -158,6 +179,17 @@ export default function Colaboradores() {
             ))
           )}
         </div>
+
+        {/* Pagination */}
+        {filteredProfiles.length > 0 && (
+          <PaginationControls
+            currentPage={currentPage}
+            totalItems={filteredProfiles.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
+          />
+        )}
       </div>
     </MainLayout>
   );

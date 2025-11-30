@@ -1,13 +1,28 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { getMonthlyData } from '@/data/mockData';
 
-export function BenefitsChart() {
-  const data = getMonthlyData();
+interface MonthlyData {
+  month: string;
+  solicitacoes: number;
+  aprovadas: number;
+}
+
+interface BenefitsChartProps {
+  data: MonthlyData[];
+}
+
+export function BenefitsChart({ data }: BenefitsChartProps) {
+
+  const hasData = data.length > 0 && data.some(d => d.solicitacoes > 0 || d.aprovadas > 0);
 
   return (
     <div className="rounded-xl border border-border bg-card p-6 animate-slide-up">
       <h3 className="text-lg font-semibold text-foreground mb-6">Solicitações por Mês</h3>
       <div className="h-80">
+        {!hasData ? (
+          <div className="h-full flex items-center justify-center text-muted-foreground">
+            Nenhum dado disponível para o período selecionado
+          </div>
+        ) : (
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -44,6 +59,7 @@ export function BenefitsChart() {
             />
           </BarChart>
         </ResponsiveContainer>
+        )}
       </div>
     </div>
   );

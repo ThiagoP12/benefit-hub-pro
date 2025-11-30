@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import {
   LayoutDashboard,
   FileText,
@@ -9,8 +10,11 @@ import {
   Settings,
   MessageSquare,
   LogOut,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -24,6 +28,7 @@ const navigation = [
 export function Sidebar() {
   const location = useLocation();
   const { username, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const handleSignOut = () => {
     logout();
@@ -75,7 +80,24 @@ export function Sidebar() {
         </nav>
 
         {/* User section */}
-        <div className="border-t border-sidebar-border p-4">
+        <div className="border-t border-sidebar-border p-4 space-y-3">
+          <div className="flex items-center justify-between px-2">
+            <span className="text-sm text-sidebar-muted">Tema</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="h-8 w-8"
+              title={theme === 'light' ? 'Modo escuro' : 'Modo claro'}
+            >
+              {theme === 'light' ? (
+                <Moon className="h-4 w-4" />
+              ) : (
+                <Sun className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          
           <div className="flex items-center gap-3 rounded-lg p-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sidebar-accent text-sidebar-accent-foreground text-sm font-semibold">
               {userInitials}

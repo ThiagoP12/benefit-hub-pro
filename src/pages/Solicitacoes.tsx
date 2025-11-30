@@ -5,6 +5,7 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { NewBenefitDialog } from '@/components/benefits/NewBenefitDialog';
+import { PaginationControls } from '@/components/ui/pagination-controls';
 import {
   Select,
   SelectContent,
@@ -47,6 +48,8 @@ export default function Solicitacoes() {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [requests, setRequests] = useState<BenefitRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   useEffect(() => {
     fetchRequests();
@@ -74,6 +77,21 @@ export default function Solicitacoes() {
     const matchesType = typeFilter === 'all' || request.benefit_type === typeFilter;
     return matchesSearch && matchesStatus && matchesType;
   });
+
+  const paginatedRequests = filteredRequests.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleItemsPerPageChange = (items: number) => {
+    setItemsPerPage(items);
+    setCurrentPage(1);
+  };
 
   return (
     <MainLayout>
@@ -167,7 +185,7 @@ export default function Solicitacoes() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredRequests.map((request) => (
+                paginatedRequests.map((request) => (
                   <TableRow key={request.id} className="hover:bg-muted/30 transition-colors">
                     <TableCell className="font-mono text-sm">{request.protocol}</TableCell>
                     <TableCell>
@@ -213,10 +231,16 @@ export default function Solicitacoes() {
           </Table>
         </div>
 
-        {/* Pagination info */}
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>Mostrando {filteredRequests.length} de {requests.length} solicitações</span>
-        </div>
+        {/* Pagination */}
+        {filteredRequests.length > 0 && (
+          <PaginationControls
+            currentPage={currentPage}
+            totalItems={filteredRequests.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
+          />
+        )}
       </div>
     </MainLayout>
   );

@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { BenefitsChart } from '@/components/dashboard/BenefitsChart';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { BenefitTypeChart } from '@/components/dashboard/BenefitTypeChart';
 import { BenefitCategoryCards } from '@/components/dashboard/BenefitCategoryCards';
 import { RecentRequests } from '@/components/dashboard/RecentRequests';
@@ -95,6 +97,34 @@ export default function Dashboard() {
     }
   };
 
+  const monthlyData = useMemo(() => {
+    if (!filters.startDate || !filters.endDate) return [];
+    
+    const months: { month: string; solicitacoes: number; aprovadas: number }[] = [];
+    const currentDate = new Date(filters.startDate);
+    const end = new Date(filters.endDate);
+    
+    while (currentDate <= end) {
+      const monthStart = startOfMonth(currentDate);
+      const monthEnd = endOfMonth(currentDate);
+      
+      const monthRequests = (benefitTypeData as any[]).filter((req: any) => {
+        const reqDate = new Date(req.created_at);
+        return reqDate >= monthStart && reqDate <= monthEnd;
+      });
+      
+      months.push({
+        month: format(currentDate, 'MMM', { locale: ptBR }),
+        solicitacoes: monthRequests.length,
+        aprovadas: monthRequests.filter((r: any) => r.status === 'aprovada').length,
+      });
+      
+      currentDate.setMonth(currentDate.getMonth() + 1);
+    }
+    
+    return months;
+  }, [benefitTypeData, filters.startDate, filters.endDate]);
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -147,7 +177,7 @@ export default function Dashboard() {
 
         {/* Charts Grid */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <BenefitsChart />
+          <BenefitsChart data={monthlyData} />
           <BenefitTypeChart data={benefitTypeData} />
         </div>
 

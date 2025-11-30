@@ -96,7 +96,7 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
           value={filters.status || 'all'}
           onValueChange={(value) => onFiltersChange({ ...filters, status: value === 'all' ? null : (value as BenefitStatus) })}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Situação" />
           </SelectTrigger>
           <SelectContent>
