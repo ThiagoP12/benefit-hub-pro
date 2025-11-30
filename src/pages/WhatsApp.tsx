@@ -95,15 +95,15 @@ export default function WhatsApp() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-foreground">Recebidas</span>
-                  <span className="text-2xl font-bold text-foreground">47</span>
+                  <span className="text-2xl font-bold text-foreground">0</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-foreground">Enviadas</span>
-                  <span className="text-2xl font-bold text-foreground">52</span>
+                  <span className="text-2xl font-bold text-foreground">0</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-foreground">Protocolos Criados</span>
-                  <span className="text-2xl font-bold text-primary">8</span>
+                  <span className="text-2xl font-bold text-primary">0</span>
                 </div>
               </div>
             </div>
