@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NewUnidadeDialog } from '@/components/unidades/NewUnidadeDialog';
 import { ManageUnidadeDialog } from '@/components/unidades/ManageUnidadeDialog';
+import { formatCnpj } from '@/lib/utils';
 
 interface Unit {
   id: string;
@@ -90,7 +91,7 @@ export default function Unidades() {
                     <h3 className="font-semibold text-lg text-foreground">{unit.name}</h3>
                     <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
                       <MapPin className="h-3.5 w-3.5" />
-                      <span>{unit.code}</span>
+                      <span>{formatCnpj(unit.code)}</span>
                     </div>
                   </div>
                 </div>

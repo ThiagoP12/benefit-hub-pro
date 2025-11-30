@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { formatCnpj } from '@/lib/utils';
 
 interface Unit {
   id: string;
@@ -14,10 +15,20 @@ interface Unit {
   code: string;
 }
 
+const DEFAULT_UNITS: Unit[] = [
+  { id: 'default-1', name: 'Revalle Juazeiro', code: '04690106000115' },
+  { id: 'default-2', name: 'Revalle Bonfim', code: '04690106000387' },
+  { id: 'default-3', name: 'Revalle Petrolina', code: '07717961000160' },
+  { id: 'default-4', name: 'Revalle Ribeira do Pombal', code: '28098474000137' },
+  { id: 'default-5', name: 'Revalle Paulo Afonso', code: '28098474000218' },
+  { id: 'default-6', name: 'Revalle Alagoinhas', code: '54677520000162' },
+  { id: 'default-7', name: 'Revalle Serrinha', code: '54677520000243' },
+];
+
 export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [units, setUnits] = useState<Unit[]>([]);
+  const [units, setUnits] = useState<Unit[]>(DEFAULT_UNITS);
   const [formData, setFormData] = useState({
     full_name: '',
     cpf: '',
@@ -37,9 +48,12 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
     if (error) {
       console.error('Erro ao buscar unidades:', error);
       toast.error('Erro ao carregar unidades');
-    } else if (data) {
-      console.log('Unidades carregadas:', data);
-      setUnits(data);
+    } else if (data && data.length > 0) {
+      console.log('Unidades carregadas do banco:', data);
+      setUnits(data as Unit[]);
+    } else {
+      console.log('Nenhuma unidade retornada do banco, usando DEFAULT_UNITS');
+      setUnits(DEFAULT_UNITS);
     }
   };
 
@@ -124,15 +138,11 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
                 <SelectValue placeholder="Selecione a unidade" />
               </SelectTrigger>
               <SelectContent className="z-50">
-                {units.length === 0 ? (
-                  <div className="p-2 text-sm text-muted-foreground">Nenhuma unidade disponível</div>
-                ) : (
-                  units.map((unit) => (
-                    <SelectItem key={unit.id} value={unit.id}>
-                      {unit.name} - {unit.code}
-                    </SelectItem>
-                  ))
-                )}
+                {units.map((unit) => (
+                  <SelectItem key={unit.id} value={unit.id}>
+                    {unit.name} - {formatCnpj(unit.code)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

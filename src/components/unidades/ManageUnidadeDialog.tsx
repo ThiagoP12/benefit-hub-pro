@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { formatCnpj } from '@/lib/utils';
 
 interface ManageUnidadeDialogProps {
   unit: {
@@ -112,10 +113,10 @@ export function ManageUnidadeDialog({ unit, onSuccess }: ManageUnidadeDialogProp
               <Input
                 id="code"
                 required
-                value={formData.code}
+                value={formatCnpj(formData.code)}
                 onChange={(e) => setFormData({ ...formData, code: e.target.value.replace(/\D/g, '') })}
                 placeholder="00.000.000/0000-00"
-                maxLength={14}
+                maxLength={18}
               />
             </div>
 
