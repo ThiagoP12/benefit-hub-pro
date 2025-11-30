@@ -5,6 +5,7 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { NewBenefitDialog } from '@/components/benefits/NewBenefitDialog';
+import { BenefitDetailsDialog } from '@/components/benefits/BenefitDetailsDialog';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 import {
   Select,
@@ -50,6 +51,8 @@ export default function Solicitacoes() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   useEffect(() => {
     fetchRequests();
@@ -108,6 +111,31 @@ export default function Solicitacoes() {
   const handleItemsPerPageChange = (items: number) => {
     setItemsPerPage(items);
     setCurrentPage(1);
+  };
+
+  const handleViewDetails = async (requestId: string) => {
+    const { data, error } = await supabase
+      .from('benefit_requests')
+      .select(`
+        *,
+        profiles (
+          full_name,
+          cpf,
+          units (
+            name
+          )
+        )
+      `)
+      .eq('id', requestId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching request details:', error);
+      return;
+    }
+
+    setSelectedRequest(data);
+    setDetailsOpen(true);
   };
 
   return (
@@ -228,15 +256,12 @@ export default function Solicitacoes() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem className="gap-2">
+                          <DropdownMenuItem 
+                            className="gap-2"
+                            onClick={() => handleViewDetails(request.id)}
+                          >
                             <Eye className="h-4 w-4" />
                             Ver Detalhes
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="gap-2">
-                            Alterar Status
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="gap-2">
-                            Histórico
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -259,6 +284,16 @@ export default function Solicitacoes() {
           />
         )}
       </div>
+
+      {/* Dialog de Detalhes */}
+      {selectedRequest && (
+        <BenefitDetailsDialog
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+          request={selectedRequest}
+          onSuccess={fetchRequests}
+        />
+      )}
     </MainLayout>
   );
 }
