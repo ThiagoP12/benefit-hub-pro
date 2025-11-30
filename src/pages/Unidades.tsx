@@ -33,6 +33,11 @@ export default function Unidades() {
         .order('name');
       
       if (error) throw error;
+      
+      // If no units in database, show default units for display
+      if (!data || data.length === 0) {
+        return DEFAULT_UNITS;
+      }
       return data;
     },
   });
@@ -75,12 +80,13 @@ export default function Unidades() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {(units && units.length > 0 ? units : DEFAULT_UNITS).map((unit, index) => (
-            <div
-              key={unit.id}
-              className="rounded-xl border border-border bg-card overflow-hidden hover:shadow-lg transition-all duration-300 animate-slide-up"
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
+          {units && units.length > 0 ? (
+            units.map((unit, index) => (
+              <div
+                key={unit.id}
+                className="rounded-xl border border-border bg-card overflow-hidden hover:shadow-lg transition-all duration-300 animate-slide-up"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
               <div className="h-2 bg-gradient-to-r from-primary to-primary/60" />
               <div className="p-6">
                 <div className="flex items-start gap-4">
@@ -118,7 +124,12 @@ export default function Unidades() {
                 </div>
               </div>
             </div>
-          ))}
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12 text-muted-foreground">
+              Nenhuma unidade cadastrada
+            </div>
+          )}
         </div>
       </div>
     </MainLayout>
