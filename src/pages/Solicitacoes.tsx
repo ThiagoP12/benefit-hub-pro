@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { mockBenefitRequests } from '@/data/mockData';
-import { benefitTypeLabels, BenefitStatus, BenefitType } from '@/types/benefits';
+import { benefitTypeLabels, statusLabels, BenefitStatus, BenefitType } from '@/types/benefits';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -28,18 +27,51 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
+
+interface BenefitRequest {
+  id: string;
+  protocol: string;
+  benefit_type: BenefitType;
+  status: BenefitStatus;
+  created_at: string;
+  profiles: {
+    full_name: string;
+  } | null;
+}
 
 export default function Solicitacoes() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [requests, setRequests] = useState<BenefitRequest[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredRequests = mockBenefitRequests.filter((request) => {
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const fetchRequests = async () => {
+    const { data, error } = await supabase
+      .from('benefit_requests')
+      .select('id, protocol, benefit_type, status, created_at, profiles(full_name)')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching requests:', error);
+    } else {
+      setRequests(data as unknown as BenefitRequest[]);
+    }
+    setLoading(false);
+  };
+
+  const filteredRequests = requests.filter((request) => {
     const matchesSearch = 
       request.protocol.toLowerCase().includes(search.toLowerCase()) ||
-      request.user?.name.toLowerCase().includes(search.toLowerCase());
+      request.profiles?.full_name?.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
-    const matchesType = typeFilter === 'all' || request.benefitType === typeFilter;
+    const matchesType = typeFilter === 'all' || request.benefit_type === typeFilter;
     return matchesSearch && matchesStatus && matchesType;
   });
 
@@ -81,11 +113,11 @@ export default function Solicitacoes() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os Status</SelectItem>
-              <SelectItem value="aberto">Aberto</SelectItem>
-              <SelectItem value="analise">Em Análise</SelectItem>
-              <SelectItem value="aprovado">Aprovado</SelectItem>
-              <SelectItem value="negado">Negado</SelectItem>
-              <SelectItem value="concluido">Concluído</SelectItem>
+              {(Object.keys(statusLabels) as BenefitStatus[]).map((status) => (
+                <SelectItem key={status} value={status}>
+                  {statusLabels[status]}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select value={typeFilter} onValueChange={setTypeFilter}>
@@ -94,13 +126,11 @@ export default function Solicitacoes() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os Tipos</SelectItem>
-              <SelectItem value="autoescola">🚗 Autoescola</SelectItem>
-              <SelectItem value="farmacia">💊 Farmácia</SelectItem>
-              <SelectItem value="oficina">🔧 Oficina</SelectItem>
-              <SelectItem value="vale_gas">⛽ Vale Gás</SelectItem>
-              <SelectItem value="papelaria">📝 Papelaria</SelectItem>
-              <SelectItem value="otica">👓 Ótica</SelectItem>
-              <SelectItem value="outros">📋 Outros</SelectItem>
+              {(Object.keys(benefitTypeLabels) as BenefitType[]).map((type) => (
+                <SelectItem key={type} value={type}>
+                  {benefitTypeLabels[type]}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -119,54 +149,73 @@ export default function Solicitacoes() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredRequests.map((request) => (
-                <TableRow key={request.id} className="hover:bg-muted/30 transition-colors">
-                  <TableCell className="font-mono text-sm">{request.protocol}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
-                        {request.user?.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                      </div>
-                      <span className="font-medium">{request.user?.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{benefitTypeLabels[request.benefitType]}</TableCell>
-                  <TableCell>
-                    <StatusBadge status={request.status} />
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {request.createdAt.toLocaleDateString('pt-BR')}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem className="gap-2">
-                          <Eye className="h-4 w-4" />
-                          Ver Detalhes
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="gap-2">
-                          Alterar Status
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="gap-2">
-                          Histórico
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+              {loading ? (
+                [...Array(5)].map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                  </TableRow>
+                ))
+              ) : filteredRequests.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    Nenhuma solicitação encontrada
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredRequests.map((request) => (
+                  <TableRow key={request.id} className="hover:bg-muted/30 transition-colors">
+                    <TableCell className="font-mono text-sm">{request.protocol}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                          {request.profiles?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '??'}
+                        </div>
+                        <span className="font-medium">{request.profiles?.full_name || 'Usuário'}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{benefitTypeLabels[request.benefit_type]}</TableCell>
+                    <TableCell>
+                      <StatusBadge status={request.status} />
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {new Date(request.created_at).toLocaleDateString('pt-BR')}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem className="gap-2">
+                            <Eye className="h-4 w-4" />
+                            Ver Detalhes
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="gap-2">
+                            Alterar Status
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="gap-2">
+                            Histórico
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
 
         {/* Pagination info */}
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>Mostrando {filteredRequests.length} de {mockBenefitRequests.length} solicitações</span>
+          <span>Mostrando {filteredRequests.length} de {requests.length} solicitações</span>
         </div>
       </div>
     </MainLayout>

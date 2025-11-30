@@ -8,7 +8,8 @@ import { RecentRequests } from '@/components/dashboard/RecentRequests';
 import { DashboardFiltersComponent, DashboardFilters } from '@/components/dashboard/DashboardFilters';
 import { FileText, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { BenefitType, BenefitStatus } from '@/types/benefits';
+import { BenefitType } from '@/types/benefits';
+import { benefitTypes } from '@/data/mockData';
 
 interface DashboardStats {
   total: number;
@@ -34,49 +35,63 @@ export default function Dashboard() {
   }, [filters]);
 
   const fetchDashboardData = async () => {
-    let query = supabase
-      .from('benefit_requests')
-      .select('status, benefit_type, user_id, profiles!inner(unit_id)');
+    try {
+      // First get benefit requests without the join that's causing issues
+      let query = supabase
+        .from('benefit_requests')
+        .select('status, benefit_type, user_id');
 
-    if (filters.unitId) {
-      query = query.eq('profiles.unit_id', filters.unitId);
-    }
-    if (filters.benefitType) {
-      query = query.eq('benefit_type', filters.benefitType);
-    }
-    if (filters.status) {
-      query = query.eq('status', filters.status);
-    }
-    if (filters.startDate) {
-      query = query.gte('created_at', filters.startDate.toISOString());
-    }
-    if (filters.endDate) {
-      query = query.lte('created_at', filters.endDate.toISOString());
-    }
+      if (filters.benefitType) {
+        query = query.eq('benefit_type', filters.benefitType);
+      }
+      if (filters.status) {
+        query = query.eq('status', filters.status);
+      }
+      if (filters.startDate) {
+        query = query.gte('created_at', filters.startDate.toISOString());
+      }
+      if (filters.endDate) {
+        query = query.lte('created_at', filters.endDate.toISOString());
+      }
 
-    const { data, error } = await query;
+      const { data, error } = await query;
 
-    if (error) {
-      console.error('Error fetching dashboard data:', error);
-      return;
-    }
+      if (error) {
+        console.error('Error fetching dashboard data:', error);
+        return;
+      }
 
-    if (data) {
-      const total = data.length;
-      const abertos = data.filter(r => r.status === 'aberta').length;
-      const emAnalise = data.filter(r => r.status === 'em_analise').length;
-      const aprovados = data.filter(r => r.status === 'aprovada').length;
-      const concluidos = data.filter(r => r.status === 'concluida').length;
+      let filteredData = data || [];
+
+      // If filtering by unit, we need to filter by user profiles
+      if (filters.unitId && filteredData.length > 0) {
+        const userIds = [...new Set(filteredData.map(r => r.user_id))];
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .eq('unit_id', filters.unitId)
+          .in('user_id', userIds);
+        
+        const validUserIds = new Set(profilesData?.map(p => p.user_id) || []);
+        filteredData = filteredData.filter(r => validUserIds.has(r.user_id));
+      }
+
+      const total = filteredData.length;
+      const abertos = filteredData.filter(r => r.status === 'aberta').length;
+      const emAnalise = filteredData.filter(r => r.status === 'em_analise').length;
+      const aprovados = filteredData.filter(r => r.status === 'aprovada').length;
+      const concluidos = filteredData.filter(r => r.status === 'concluida').length;
 
       setStats({ total, abertos, emAnalise, aprovados, concluidos });
 
       // Calculate benefit type counts
-      const benefitTypes: BenefitType[] = ['autoescola', 'farmacia', 'oficina', 'vale_gas', 'papelaria', 'otica', 'outros'];
       const typeData = benefitTypes.map(type => ({
         type,
-        count: data.filter(r => r.benefit_type === type).length,
+        count: filteredData.filter(r => r.benefit_type === type).length,
       }));
       setBenefitTypeData(typeData);
+    } catch (err) {
+      console.error('Error in fetchDashboardData:', err);
     }
   };
 

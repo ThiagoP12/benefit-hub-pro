@@ -229,14 +229,12 @@ export type Database = {
         | "concluida"
         | "recusada"
       benefit_type:
-        | "auxilio_alimentacao"
-        | "auxilio_creche"
-        | "auxilio_educacao"
-        | "auxilio_home_office"
-        | "auxilio_moradia"
-        | "auxilio_saude"
-        | "auxilio_transporte"
-        | "vale_cultura"
+        | "autoescola"
+        | "farmacia"
+        | "oficina"
+        | "vale_gas"
+        | "papelaria"
+        | "otica"
         | "outros"
     }
     CompositeTypes: {
@@ -374,14 +372,12 @@ export const Constants = {
         "recusada",
       ],
       benefit_type: [
-        "auxilio_alimentacao",
-        "auxilio_creche",
-        "auxilio_educacao",
-        "auxilio_home_office",
-        "auxilio_moradia",
-        "auxilio_saude",
-        "auxilio_transporte",
-        "vale_cultura",
+        "autoescola",
+        "farmacia",
+        "oficina",
+        "vale_gas",
+        "papelaria",
+        "otica",
         "outros",
       ],
     },

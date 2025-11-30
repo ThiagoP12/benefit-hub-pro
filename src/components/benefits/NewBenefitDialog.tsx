@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -23,15 +23,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Plus } from 'lucide-react';
-import { mockUsers } from '@/data/mockData';
 import { benefitTypeLabels, BenefitType } from '@/types/benefits';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+
+interface Profile {
+  id: string;
+  user_id: string;
+  full_name: string;
+  cpf: string | null;
+}
 
 const formSchema = z.object({
   userId: z.string().min(1, 'Selecione um colaborador'),
@@ -41,6 +47,8 @@ const formSchema = z.object({
 
 export function NewBenefitDialog() {
   const [open, setOpen] = useState(false);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [loading, setLoading] = useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,19 +59,50 @@ export function NewBenefitDialog() {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    const user = mockUsers.find(u => u.id === parseInt(values.userId));
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, user_id, full_name, cpf')
+        .order('full_name');
+      
+      if (data) setProfiles(data);
+    };
+    
+    if (open) fetchProfiles();
+  }, [open]);
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setLoading(true);
+    
     const protocol = `BEN-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`;
     
+    const { error } = await supabase
+      .from('benefit_requests')
+      .insert({
+        user_id: values.userId,
+        benefit_type: values.benefitType as BenefitType,
+        details: values.details,
+        protocol,
+        status: 'aberta',
+      });
+    
+    setLoading(false);
+    
+    if (error) {
+      toast.error('Erro ao criar solicitação', {
+        description: error.message,
+      });
+      return;
+    }
+    
     toast.success(`Benefício criado com sucesso!`, {
-      description: `Protocolo: ${protocol} - ${user?.name}`,
+      description: `Protocolo: ${protocol}`,
     });
     
     setOpen(false);
     form.reset();
   };
-
-  const colaboradores = mockUsers.filter(u => u.role === 'colaborador');
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -95,9 +134,9 @@ export function NewBenefitDialog() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {colaboradores.map((user) => (
-                        <SelectItem key={user.id} value={user.id.toString()}>
-                          {user.name} - {user.cpf}
+                      {profiles.map((profile) => (
+                        <SelectItem key={profile.user_id} value={profile.user_id}>
+                          {profile.full_name} {profile.cpf ? `- ${profile.cpf}` : ''}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -159,7 +198,9 @@ export function NewBenefitDialog() {
               >
                 Cancelar
               </Button>
-              <Button type="submit">Criar Solicitação</Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Criando...' : 'Criar Solicitação'}
+              </Button>
             </div>
           </form>
         </Form>
