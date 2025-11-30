@@ -38,16 +38,41 @@ export default function Colaboradores() {
   }, []);
 
   const fetchProfiles = async () => {
-    const { data, error } = await supabase
+    // Buscar profiles com unit_id
+    const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, user_id, full_name, email, cpf, units(name), user_roles(role)')
+      .select('id, user_id, full_name, email, cpf, unit_id')
       .order('full_name');
 
-    if (error) {
-      console.error('Error fetching profiles:', error);
-    } else {
-      setProfiles(data as unknown as Profile[]);
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError);
+      setLoading(false);
+      return;
     }
+
+    // Buscar units
+    const { data: unitsData } = await supabase
+      .from('units')
+      .select('id, name');
+
+    // Buscar user_roles
+    const { data: rolesData } = await supabase
+      .from('user_roles')
+      .select('user_id, role');
+
+    // Combinar dados
+    const profilesWithRelations = profilesData.map((profile) => {
+      const unit = unitsData?.find((u) => u.id === profile.unit_id);
+      const roles = rolesData?.filter((r) => r.user_id === profile.user_id) || [];
+      
+      return {
+        ...profile,
+        units: unit ? { name: unit.name } : null,
+        user_roles: roles,
+      };
+    });
+
+    setProfiles(profilesWithRelations as unknown as Profile[]);
     setLoading(false);
   };
 
