@@ -14,9 +14,9 @@ export default function Dashboard() {
       <div className="space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard - Gestão de Benefícios</h1>
           <p className="mt-1 text-muted-foreground">
-            Visão geral das solicitações de benefícios
+            Acompanhamento em tempo real das solicitações e análises do DP
           </p>
         </div>
 

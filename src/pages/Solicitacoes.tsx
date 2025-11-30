@@ -5,6 +5,7 @@ import { benefitTypeLabels, BenefitStatus, BenefitType } from '@/types/benefits'
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { NewBenefitDialog } from '@/components/benefits/NewBenefitDialog';
 import {
   Select,
   SelectContent,
@@ -48,15 +49,18 @@ export default function Solicitacoes() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Solicitações</h1>
+            <h1 className="text-3xl font-bold text-foreground">Solicitações de Benefícios</h1>
             <p className="mt-1 text-muted-foreground">
-              Gerencie todas as solicitações de benefícios
+              Cadastre e gerencie solicitações de benefícios dos colaboradores
             </p>
           </div>
-          <Button className="gap-2">
-            <Download className="h-4 w-4" />
-            Exportar
-          </Button>
+          <div className="flex gap-3">
+            <NewBenefitDialog />
+            <Button variant="outline" className="gap-2">
+              <Download className="h-4 w-4" />
+              Exportar
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
