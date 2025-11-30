@@ -18,10 +18,16 @@ export type Database = {
         Row: {
           approved_value: number | null
           benefit_type: Database["public"]["Enums"]["benefit_type"]
+          closed_at: string | null
+          closed_by: string | null
+          closing_message: string | null
           created_at: string
           details: string | null
           id: string
+          pdf_file_name: string | null
+          pdf_url: string | null
           protocol: string
+          rejection_reason: string | null
           requested_value: number | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -32,10 +38,16 @@ export type Database = {
         Insert: {
           approved_value?: number | null
           benefit_type: Database["public"]["Enums"]["benefit_type"]
+          closed_at?: string | null
+          closed_by?: string | null
+          closing_message?: string | null
           created_at?: string
           details?: string | null
           id?: string
+          pdf_file_name?: string | null
+          pdf_url?: string | null
           protocol: string
+          rejection_reason?: string | null
           requested_value?: number | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -46,10 +58,16 @@ export type Database = {
         Update: {
           approved_value?: number | null
           benefit_type?: Database["public"]["Enums"]["benefit_type"]
+          closed_at?: string | null
+          closed_by?: string | null
+          closing_message?: string | null
           created_at?: string
           details?: string | null
           id?: string
+          pdf_file_name?: string | null
+          pdf_url?: string | null
           protocol?: string
+          rejection_reason?: string | null
           requested_value?: number | null
           reviewed_at?: string | null
           reviewed_by?: string | null
