@@ -9,10 +9,10 @@ export function ImportCSVDialog({ onSuccess }: { onSuccess?: () => void }) {
   const [loading, setLoading] = useState(false);
 
   const handleDownloadExample = () => {
-    const csvContent = `nome_completo,cpf,unidade_revenda,cargo
-João da Silva,12345678901,Revalle Juazeiro,colaborador
-Maria Santos,98765432109,Revalle Bonfim,gestor
-Pedro Oliveira,11122233344,Revalle Petrolina,colaborador`;
+    const csvContent = `nome_completo,cpf,email,cnpj_unidade,cargo
+João da Silva,12345678901,joao@exemplo.com,04690106000115,Vendedor
+Maria Santos,98765432109,maria@exemplo.com,04690106000387,Gerente
+Pedro Oliveira,11122233344,pedro@exemplo.com,07717961000160,Assistente Administrativo`;
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -38,7 +38,7 @@ Pedro Oliveira,11122233344,Revalle Petrolina,colaborador`;
 
       // Parse CSV (simple implementation)
       const headers = lines[0].split(',').map(h => h.trim());
-      const expectedHeaders = ['nome_completo', 'cpf', 'unidade_revenda', 'cargo'];
+      const expectedHeaders = ['nome_completo', 'cpf', 'email', 'cnpj_unidade', 'cargo'];
       
       const hasValidHeaders = expectedHeaders.every(h => headers.includes(h));
       if (!hasValidHeaders) {
@@ -51,8 +51,9 @@ Pedro Oliveira,11122233344,Revalle Petrolina,colaborador`;
         return {
           nome_completo: values[0],
           cpf: values[1],
-          unidade_revenda: values[2],
-          cargo: values[3],
+          email: values[2],
+          cnpj_unidade: values[3],
+          cargo: values[4],
         };
       });
 
@@ -87,8 +88,9 @@ Pedro Oliveira,11122233344,Revalle Petrolina,colaborador`;
             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
               <li>nome_completo</li>
               <li>cpf (apenas números)</li>
-              <li>unidade_revenda</li>
-              <li>cargo (colaborador, gestor ou admin)</li>
+              <li>email</li>
+              <li>cnpj_unidade (apenas números)</li>
+              <li>cargo (texto livre)</li>
             </ul>
           </div>
 

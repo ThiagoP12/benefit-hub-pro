@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NewUnidadeDialog } from '@/components/unidades/NewUnidadeDialog';
+import { Button } from '@/components/ui/button';
 
 interface Unit {
   id?: string;
