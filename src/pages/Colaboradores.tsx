@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NewColaboradorDialog } from '@/components/colaboradores/NewColaboradorDialog';
 import { ImportCSVDialog } from '@/components/colaboradores/ImportCSVDialog';
+import { DeleteColaboradorDialog } from '@/components/colaboradores/DeleteColaboradorDialog';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 
 interface Profile {
@@ -171,9 +172,14 @@ export default function Colaboradores() {
                   <Badge variant={getRoleVariant(profile)}>
                     {getRoleLabel(profile)}
                   </Badge>
-                  <Button variant="ghost" size="sm">
-                    Ver Perfil
-                  </Button>
+                  <div className="flex gap-2">
+                    <DeleteColaboradorDialog
+                      profileId={profile.id}
+                      userId={profile.user_id}
+                      name={profile.full_name}
+                      onSuccess={fetchProfiles}
+                    />
+                  </div>
                 </div>
               </div>
             ))

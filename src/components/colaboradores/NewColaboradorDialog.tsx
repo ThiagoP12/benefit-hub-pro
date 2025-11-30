@@ -33,8 +33,14 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
   }, [open]);
 
   const fetchUnits = async () => {
-    const { data } = await supabase.from('units').select('*').order('name');
-    if (data) setUnits(data);
+    const { data, error } = await supabase.from('units').select('*').order('name');
+    if (error) {
+      console.error('Erro ao buscar unidades:', error);
+      toast.error('Erro ao carregar unidades');
+    } else if (data) {
+      console.log('Unidades carregadas:', data);
+      setUnits(data);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -112,17 +118,21 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="unit">Unidade/Revenda *</Label>
+            <Label htmlFor="unit">Unidade *</Label>
             <Select value={formData.unit_id} onValueChange={(value) => setFormData({ ...formData, unit_id: value })}>
               <SelectTrigger id="unit">
                 <SelectValue placeholder="Selecione a unidade" />
               </SelectTrigger>
-              <SelectContent>
-                {units.map((unit) => (
-                  <SelectItem key={unit.id} value={unit.id}>
-                    {unit.name}
-                  </SelectItem>
-                ))}
+              <SelectContent className="z-50">
+                {units.length === 0 ? (
+                  <div className="p-2 text-sm text-muted-foreground">Nenhuma unidade disponível</div>
+                ) : (
+                  units.map((unit) => (
+                    <SelectItem key={unit.id} value={unit.id}>
+                      {unit.name} - {unit.code}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>

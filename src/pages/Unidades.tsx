@@ -4,10 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NewUnidadeDialog } from '@/components/unidades/NewUnidadeDialog';
-import { Button } from '@/components/ui/button';
+import { ManageUnidadeDialog } from '@/components/unidades/ManageUnidadeDialog';
 
 interface Unit {
-  id?: string;
+  id: string;
   name: string;
   code: string;
 }
@@ -74,7 +74,7 @@ export default function Unidades() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {(units && (units as Unit[]).length > 0 ? (units as Unit[]) : DEFAULT_UNITS).map((unit, index) => (
+          {(units && units.length > 0 ? units : DEFAULT_UNITS).map((unit, index) => (
             <div
               key={unit.id}
               className="rounded-xl border border-border bg-card overflow-hidden hover:shadow-lg transition-all duration-300 animate-slide-up"
@@ -113,9 +113,7 @@ export default function Unidades() {
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-border">
-                  <Button variant="outline" className="w-full">
-                    Gerenciar Unidade
-                  </Button>
+                  <ManageUnidadeDialog unit={unit} onSuccess={() => refetch()} />
                 </div>
               </div>
             </div>
