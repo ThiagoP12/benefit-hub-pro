@@ -22,7 +22,6 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
   const [formData, setFormData] = useState({
     full_name: '',
     cpf: '',
-    email: '',
     birthday: '',
     unit_id: '',
     role: '',
@@ -54,9 +53,9 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .insert([{
-          user_id: crypto.randomUUID(), // Temporary: In production, create auth user first
+          user_id: crypto.randomUUID(),
           full_name: formData.full_name,
-          email: formData.email,
+          email: `${formData.cpf}@temp.com`, // Email temporário baseado no CPF
           cpf: formData.cpf,
           birthday: formData.birthday,
           unit_id: formData.unit_id,
@@ -72,7 +71,6 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
       setFormData({
         full_name: '',
         cpf: '',
-        email: '',
         birthday: '',
         unit_id: '',
         role: '',
@@ -119,18 +117,6 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
               onChange={(e) => setFormData({ ...formData, cpf: e.target.value.replace(/\D/g, '') })}
               placeholder="000.000.000-00"
               maxLength={11}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
-            <Input
-              id="email"
-              type="email"
-              required
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="email@exemplo.com"
             />
           </div>
 

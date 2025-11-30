@@ -13,6 +13,11 @@ interface Unit {
   code: string;
 }
 
+interface UnitWithStats extends Unit {
+  collaborators_count: number;
+  requests_count: number;
+}
+
 const DEFAULT_UNITS: Unit[] = [
   { id: 'default-1', name: 'Revalle Juazeiro', code: '04690106000115' },
   { id: 'default-2', name: 'Revalle Bonfim', code: '04690106000387' },
@@ -27,18 +32,59 @@ export default function Unidades() {
   const { data: units, isLoading, refetch } = useQuery({
     queryKey: ['units'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Buscar unidades
+      const { data: unitsData, error: unitsError } = await supabase
         .from('units')
         .select('*')
         .order('name');
       
-      if (error) throw error;
+      if (unitsError) throw unitsError;
       
-      // If no units in database, show default units for display
-      if (!data || data.length === 0) {
-        return DEFAULT_UNITS;
+      if (!unitsData || unitsData.length === 0) {
+        return DEFAULT_UNITS.map(unit => ({
+          ...unit,
+          collaborators_count: 0,
+          requests_count: 0,
+        }));
       }
-      return data;
+
+      // Buscar contagens de colaboradores por unidade
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('unit_id');
+
+      // Buscar contagens de solicitações por unidade (através do user_id -> profile -> unit_id)
+      const { data: requestsData } = await supabase
+        .from('benefit_requests')
+        .select('user_id');
+
+      const { data: profilesForRequests } = await supabase
+        .from('profiles')
+        .select('user_id, unit_id');
+
+      // Contar colaboradores por unidade
+      const collaboratorsCounts: Record<string, number> = {};
+      profilesData?.forEach(profile => {
+        if (profile.unit_id) {
+          collaboratorsCounts[profile.unit_id] = (collaboratorsCounts[profile.unit_id] || 0) + 1;
+        }
+      });
+
+      // Contar solicitações por unidade
+      const requestsCounts: Record<string, number> = {};
+      requestsData?.forEach(request => {
+        const profile = profilesForRequests?.find(p => p.user_id === request.user_id);
+        if (profile?.unit_id) {
+          requestsCounts[profile.unit_id] = (requestsCounts[profile.unit_id] || 0) + 1;
+        }
+      });
+
+      // Combinar dados
+      return unitsData.map(unit => ({
+        ...unit,
+        collaborators_count: collaboratorsCounts[unit.id] || 0,
+        requests_count: requestsCounts[unit.id] || 0,
+      })) as UnitWithStats[];
     },
   });
 
@@ -108,14 +154,18 @@ export default function Unidades() {
                       <Users className="h-4 w-4" />
                       <span className="text-xs font-medium">Colaboradores</span>
                     </div>
-                    <p className="mt-1 text-2xl font-bold text-foreground">-</p>
+                    <p className="mt-1 text-2xl font-bold text-foreground">
+                      {unit.collaborators_count}
+                    </p>
                   </div>
                   <div className="rounded-lg bg-muted/50 p-3 text-center">
                     <div className="flex items-center justify-center gap-2 text-muted-foreground">
                       <FileText className="h-4 w-4" />
                       <span className="text-xs font-medium">Solicitações</span>
                     </div>
-                    <p className="mt-1 text-2xl font-bold text-foreground">-</p>
+                    <p className="mt-1 text-2xl font-bold text-foreground">
+                      {unit.requests_count}
+                    </p>
                   </div>
                 </div>
 

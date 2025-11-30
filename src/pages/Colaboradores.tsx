@@ -16,7 +16,6 @@ interface Profile {
   id: string;
   user_id: string;
   full_name: string;
-  email: string;
   cpf: string | null;
   birthday: string | null;
   units: {
@@ -42,7 +41,7 @@ export default function Colaboradores() {
     // Buscar profiles com unit_id
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, user_id, full_name, email, cpf, birthday, unit_id')
+      .select('id, user_id, full_name, cpf, birthday, unit_id')
       .order('full_name');
 
     if (profilesError) {
@@ -79,8 +78,7 @@ export default function Colaboradores() {
 
   const filteredProfiles = profiles.filter((profile) =>
     profile.full_name.toLowerCase().includes(search.toLowerCase()) ||
-    (profile.cpf && profile.cpf.includes(search)) ||
-    profile.email.toLowerCase().includes(search.toLowerCase())
+    (profile.cpf && profile.cpf.includes(search))
   );
 
   const getRoleLabel = (profile: Profile) => {
@@ -131,7 +129,7 @@ export default function Colaboradores() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Buscar por nome, CPF ou email..."
+              placeholder="Buscar por nome ou CPF..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
