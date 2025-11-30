@@ -19,6 +19,9 @@ interface Profile {
   full_name: string;
   cpf: string | null;
   birthday: string | null;
+  phone: string | null;
+  gender: string | null;
+  position: string | null;
   unit_id: string | null;
   units: {
     name: string;
@@ -43,7 +46,7 @@ export default function Colaboradores() {
     // Buscar profiles com unit_id
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, user_id, full_name, cpf, birthday, unit_id')
+      .select('id, user_id, full_name, cpf, birthday, phone, gender, position, unit_id')
       .order('full_name');
 
     if (profilesError) {
@@ -208,6 +211,9 @@ export default function Colaboradores() {
                         full_name: profile.full_name,
                         cpf: profile.cpf,
                         birthday: profile.birthday,
+                        phone: profile.phone,
+                        gender: profile.gender,
+                        position: profile.position,
                         unit_id: profile.unit_id,
                       }}
                       onSuccess={fetchProfiles}
