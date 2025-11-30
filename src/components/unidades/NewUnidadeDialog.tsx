@@ -35,8 +35,8 @@ export function NewUnidadeDialog({ onSuccess }: { onSuccess?: () => void }) {
       setFormData({ name: '', code: '' });
       onSuccess?.();
     } catch (error) {
+      console.error('Erro ao cadastrar unidade:', error);
       toast.error('Erro ao cadastrar unidade');
-      console.error(error);
     } finally {
       setLoading(false);
     }

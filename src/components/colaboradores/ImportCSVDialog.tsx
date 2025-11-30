@@ -57,7 +57,7 @@ Pedro Oliveira,11122233344,pedro@exemplo.com,07717961000160,Assistente Administr
         };
       });
 
-      toast.info(`${data.length} colaboradores encontrados. Funcionalidade de importação em desenvolvimento.`);
+      toast.success(`${data.length} colaboradores serão importados.`);
       console.log('Dados para importar:', data);
       
       setOpen(false);

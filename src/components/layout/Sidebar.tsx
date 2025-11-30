@@ -1,7 +1,8 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { supabase } from '@/integrations/supabase/client';
 import {
   LayoutDashboard,
   FileText,
@@ -19,24 +20,27 @@ import { Button } from '@/components/ui/button';
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Benefícios', href: '/solicitacoes', icon: FileText },
-  { name: 'Colaboradores', href: '/colaboradores', icon: Users, badge: 'Em Dev' },
-  { name: 'Unidades', href: '/unidades', icon: Building2, badge: 'Em Dev' },
+  { name: 'Colaboradores', href: '/colaboradores', icon: Users },
+  { name: 'Unidades', href: '/unidades', icon: Building2 },
   { name: 'WhatsApp', href: '/whatsapp', icon: MessageSquare, badge: 'Em Dev' },
   { name: 'Configurações', href: '/configuracoes', icon: Settings, badge: 'Em Dev' },
 ];
 
 export function Sidebar() {
   const location = useLocation();
-  const { username, logout } = useAuth();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
-  const handleSignOut = () => {
-    logout();
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
     toast.success('Você saiu da sua conta');
+    navigate('/auth');
   };
 
-  const userInitials = username?.slice(0, 2).toUpperCase() || 'DP';
-  const userName = username === 'dp' ? 'Depart. Pessoal' : username || 'Usuário';
+  const userEmail = user?.email || '';
+  const userInitials = userEmail ? userEmail.slice(0, 2).toUpperCase() : 'US';
+  const userName = user?.user_metadata?.full_name || userEmail.split('@')[0] || 'Usuário';
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar border-r border-sidebar-border">
