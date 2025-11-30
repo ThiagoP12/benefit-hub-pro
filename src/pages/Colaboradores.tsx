@@ -4,7 +4,7 @@ import { roleLabels, UserRole } from '@/types/benefits';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Building2, Calendar } from 'lucide-react';
+import { Search, Building2, Calendar, Phone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NewColaboradorDialog } from '@/components/colaboradores/NewColaboradorDialog';
@@ -189,6 +189,12 @@ export default function Colaboradores() {
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4" />
                       <span>Aniversário: {profile.birthday}</span>
+                    </div>
+                  )}
+                  {profile.phone && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Phone className="h-4 w-4" />
+                      <span>{profile.phone}</span>
                     </div>
                   )}
                   {profile.units && (
