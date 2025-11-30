@@ -1,11 +1,82 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { mockBenefitRequests } from '@/data/mockData';
-import { benefitTypeLabels, statusLabels } from '@/types/benefits';
+import { benefitTypeLabels } from '@/types/benefits';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { ArrowRight } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { BenefitStatus, BenefitType } from '@/types/benefits';
+
+interface RecentRequest {
+  id: string;
+  protocol: string;
+  benefit_type: BenefitType;
+  status: BenefitStatus;
+  created_at: string;
+  profiles: {
+    full_name: string;
+  } | null;
+}
 
 export function RecentRequests() {
-  const recentRequests = mockBenefitRequests.slice(0, 5);
+  const [requests, setRequests] = useState<RecentRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRecentRequests = async () => {
+      const { data, error } = await supabase
+        .from('benefit_requests')
+        .select('id, protocol, benefit_type, status, created_at, profiles(full_name)')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (error) {
+        console.error('Error fetching recent requests:', error);
+      } else {
+        setRequests(data as unknown as RecentRequest[]);
+      }
+      setLoading(false);
+    };
+
+    fetchRecentRequests();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="rounded-xl border border-border bg-card animate-slide-up" style={{ animationDelay: '200ms' }}>
+        <div className="p-6 border-b border-border">
+          <Skeleton className="h-6 w-48" />
+        </div>
+        <div className="divide-y divide-border">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div>
+                  <Skeleton className="h-4 w-32 mb-2" />
+                  <Skeleton className="h-3 w-48" />
+                </div>
+              </div>
+              <Skeleton className="h-6 w-20" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (requests.length === 0) {
+    return (
+      <div className="rounded-xl border border-border bg-card animate-slide-up" style={{ animationDelay: '200ms' }}>
+        <div className="flex items-center justify-between p-6 border-b border-border">
+          <h3 className="text-lg font-semibold text-foreground">Solicitações Recentes</h3>
+        </div>
+        <div className="p-8 text-center text-muted-foreground">
+          Nenhuma solicitação encontrada
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-xl border border-border bg-card animate-slide-up" style={{ animationDelay: '200ms' }}>
@@ -20,22 +91,22 @@ export function RecentRequests() {
         </Link>
       </div>
       <div className="divide-y divide-border">
-        {recentRequests.map((request) => (
+        {requests.map((request) => (
           <div key={request.id} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
             <div className="flex items-center gap-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-semibold">
-                {request.user?.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                {request.profiles?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '??'}
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">{request.user?.name}</p>
+                <p className="text-sm font-medium text-foreground">{request.profiles?.full_name || 'Usuário'}</p>
                 <p className="text-xs text-muted-foreground">
-                  {request.protocol} • {benefitTypeLabels[request.benefitType]}
+                  {request.protocol} • {benefitTypeLabels[request.benefit_type]}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-xs text-muted-foreground">
-                {request.createdAt.toLocaleDateString('pt-BR')}
+                {new Date(request.created_at).toLocaleDateString('pt-BR')}
               </span>
               <StatusBadge status={request.status} />
             </div>

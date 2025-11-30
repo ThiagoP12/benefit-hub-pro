@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { mockPaymentReceipts } from '@/data/mockData';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,25 +19,52 @@ import {
 } from '@/components/ui/table';
 import { Search, Download, Eye, FileText } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
+
+interface PaymentReceipt {
+  id: string;
+  file_name: string;
+  file_url: string;
+  uploaded_at: string;
+  benefit_request_id: string;
+  benefit_requests: {
+    user_id: string;
+    profiles: {
+      full_name: string;
+    } | null;
+  } | null;
+}
 
 export default function Recibos() {
   const [search, setSearch] = useState('');
-  const [yearFilter, setYearFilter] = useState<string>('all');
+  const [receipts, setReceipts] = useState<PaymentReceipt[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredReceipts = mockPaymentReceipts.filter((receipt) => {
-    const matchesSearch = 
-      receipt.user?.name.toLowerCase().includes(search.toLowerCase()) ||
-      receipt.month.toLowerCase().includes(search.toLowerCase());
-    const matchesYear = yearFilter === 'all' || receipt.year.toString() === yearFilter;
-    return matchesSearch && matchesYear;
-  });
+  useEffect(() => {
+    fetchReceipts();
+  }, []);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
+  const fetchReceipts = async () => {
+    const { data, error } = await supabase
+      .from('payment_receipts')
+      .select('id, file_name, file_url, uploaded_at, benefit_request_id, benefit_requests(user_id, profiles(full_name))')
+      .order('uploaded_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching receipts:', error);
+    } else {
+      setReceipts(data as unknown as PaymentReceipt[]);
+    }
+    setLoading(false);
   };
+
+  const filteredReceipts = receipts.filter((receipt) => {
+    const matchesSearch = 
+      receipt.benefit_requests?.profiles?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+      receipt.file_name.toLowerCase().includes(search.toLowerCase());
+    return matchesSearch;
+  });
 
   return (
     <MainLayout>
@@ -62,7 +88,7 @@ export default function Recibos() {
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total de Recibos</p>
-                <p className="text-2xl font-bold text-foreground">{mockPaymentReceipts.length}</p>
+                <p className="text-2xl font-bold text-foreground">{receipts.length}</p>
               </div>
             </div>
           </Card>
@@ -72,8 +98,10 @@ export default function Recibos() {
                 <Download className="h-6 w-6 text-success" />
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Último Mês</p>
-                <p className="text-2xl font-bold text-foreground">Janeiro/2024</p>
+                <p className="text-sm font-medium text-muted-foreground">Último Upload</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {receipts[0] ? new Date(receipts[0].uploaded_at).toLocaleDateString('pt-BR') : '-'}
+                </p>
               </div>
             </div>
           </Card>
@@ -85,7 +113,7 @@ export default function Recibos() {
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Colaboradores</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {new Set(mockPaymentReceipts.map(r => r.userId)).size}
+                  {new Set(receipts.map(r => r.benefit_requests?.user_id).filter(Boolean)).size}
                 </p>
               </div>
             </div>
@@ -97,22 +125,12 @@ export default function Recibos() {
           <div className="relative flex-1 min-w-[240px]">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Buscar por colaborador ou mês..."
+              placeholder="Buscar por colaborador ou arquivo..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
             />
           </div>
-          <Select value={yearFilter} onValueChange={setYearFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Ano" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os Anos</SelectItem>
-              <SelectItem value="2024">2024</SelectItem>
-              <SelectItem value="2023">2023</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
 
         {/* Table */}
@@ -121,61 +139,70 @@ export default function Recibos() {
             <TableHeader>
               <TableRow className="bg-muted/50">
                 <TableHead className="font-semibold">Colaborador</TableHead>
-                <TableHead className="font-semibold">Período</TableHead>
-                <TableHead className="font-semibold">Salário Bruto</TableHead>
-                <TableHead className="font-semibold">Descontos</TableHead>
-                <TableHead className="font-semibold">Salário Líquido</TableHead>
-                <TableHead className="font-semibold">Emissão</TableHead>
+                <TableHead className="font-semibold">Arquivo</TableHead>
+                <TableHead className="font-semibold">Data Upload</TableHead>
                 <TableHead className="font-semibold text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredReceipts.map((receipt) => (
-                <TableRow key={receipt.id} className="hover:bg-muted/30 transition-colors">
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
-                        {receipt.user?.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                      </div>
-                      <span className="font-medium">{receipt.user?.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {receipt.month}/{receipt.year}
-                  </TableCell>
-                  <TableCell className="text-success font-semibold">
-                    {formatCurrency(receipt.grossSalary)}
-                  </TableCell>
-                  <TableCell className="text-destructive">
-                    {formatCurrency(receipt.deductions)}
-                  </TableCell>
-                  <TableCell className="font-bold text-foreground">
-                    {formatCurrency(receipt.netSalary)}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {receipt.createdAt.toLocaleDateString('pt-BR')}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button variant="ghost" size="sm" className="gap-2">
-                        <Eye className="h-4 w-4" />
-                        Ver
-                      </Button>
-                      <Button variant="ghost" size="sm" className="gap-2">
-                        <Download className="h-4 w-4" />
-                        Baixar
-                      </Button>
-                    </div>
+              {loading ? (
+                [...Array(5)].map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
+                  </TableRow>
+                ))
+              ) : filteredReceipts.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                    Nenhum recibo encontrado
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredReceipts.map((receipt) => (
+                  <TableRow key={receipt.id} className="hover:bg-muted/30 transition-colors">
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                          {receipt.benefit_requests?.profiles?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '??'}
+                        </div>
+                        <span className="font-medium">{receipt.benefit_requests?.profiles?.full_name || 'Usuário'}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {receipt.file_name}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {new Date(receipt.uploaded_at).toLocaleDateString('pt-BR')}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button variant="ghost" size="sm" className="gap-2" asChild>
+                          <a href={receipt.file_url} target="_blank" rel="noopener noreferrer">
+                            <Eye className="h-4 w-4" />
+                            Ver
+                          </a>
+                        </Button>
+                        <Button variant="ghost" size="sm" className="gap-2" asChild>
+                          <a href={receipt.file_url} download>
+                            <Download className="h-4 w-4" />
+                            Baixar
+                          </a>
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
 
         {/* Pagination info */}
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>Mostrando {filteredReceipts.length} de {mockPaymentReceipts.length} recibos</span>
+          <span>Mostrando {filteredReceipts.length} de {receipts.length} recibos</span>
         </div>
       </div>
     </MainLayout>

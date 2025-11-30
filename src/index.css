@@ -121,6 +121,15 @@
     --sidebar-border: 230 20% 22%;
     --sidebar-ring: 267 83% 57%;
     --sidebar-muted: 230 20% 25%;
+
+    /* Benefit category colors - dark mode */
+    --benefit-autoescola: 210 100% 55%;
+    --benefit-farmacia: 142 76% 42%;
+    --benefit-oficina: 25 95% 58%;
+    --benefit-vale-gas: 45 93% 52%;
+    --benefit-papelaria: 280 65% 65%;
+    --benefit-otica: 187 85% 48%;
+    --benefit-outros: 220 9% 55%;
   }
 }
 
