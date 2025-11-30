@@ -31,24 +31,24 @@ const iconStyles = {
 export function StatCard({ title, value, icon: Icon, trend, variant = 'default' }: StatCardProps) {
   return (
     <div className={cn(
-      'rounded-xl border p-6 transition-all duration-200 hover:shadow-md animate-fade-in',
+      'rounded-xl border p-6 transition-all duration-200 hover:shadow-md hover:border-primary/30 animate-fade-in',
       variantStyles[variant]
     )}>
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-foreground">{value}</p>
+          <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{title}</p>
+          <p className="mt-2 text-4xl font-bold text-foreground">{value}</p>
           {trend && (
             <p className={cn(
-              'mt-1 text-sm font-medium',
+              'mt-1 text-sm font-semibold',
               trend.isPositive ? 'text-success' : 'text-destructive'
             )}>
               {trend.isPositive ? '+' : ''}{trend.value}% vs mês anterior
             </p>
           )}
         </div>
-        <div className={cn('rounded-lg p-3', iconStyles[variant])}>
-          <Icon className="h-6 w-6" />
+        <div className={cn('rounded-xl p-3', iconStyles[variant])}>
+          <Icon className="h-7 w-7" />
         </div>
       </div>
     </div>
