@@ -1,8 +1,7 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { supabase } from '@/integrations/supabase/client';
 import {
   LayoutDashboard,
   FileText,
@@ -28,19 +27,16 @@ const navigation = [
 
 export function Sidebar() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { user } = useAuth();
+  const { username, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
+  const handleSignOut = () => {
+    logout();
     toast.success('Você saiu da sua conta');
-    navigate('/auth');
   };
 
-  const userEmail = user?.email || '';
-  const userInitials = userEmail ? userEmail.slice(0, 2).toUpperCase() : 'US';
-  const userName = user?.user_metadata?.full_name || userEmail.split('@')[0] || 'Usuário';
+  const userInitials = username?.slice(0, 2).toUpperCase() || 'DP';
+  const userName = username === 'dp' ? 'Depart. Pessoal' : username || 'Usuário';
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar border-r border-sidebar-border">
