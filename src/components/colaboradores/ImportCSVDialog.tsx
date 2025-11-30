@@ -9,10 +9,10 @@ export function ImportCSVDialog({ onSuccess }: { onSuccess?: () => void }) {
   const [loading, setLoading] = useState(false);
 
   const handleDownloadExample = () => {
-    const csvContent = `nome_completo,cpf,email,aniversario,unidade,cargo
-João da Silva,12345678901,joao@exemplo.com,15/03,Revalle Juazeiro,Vendedor
-Maria Santos,98765432109,maria@exemplo.com,22/07,Revalle Bonfim,Gerente
-Pedro Oliveira,11122233344,pedro@exemplo.com,01/10,07717961000160,Assistente Administrativo`;
+    const csvContent = `nome_completo,cpf,aniversario,unidade,cargo
+João da Silva,12345678901,15/03,Revalle Juazeiro,Vendedor
+Maria Santos,98765432109,22/07,Revalle Bonfim,Gerente
+Pedro Oliveira,11122233344,01/10,07717961000160,Assistente Administrativo`;
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -38,7 +38,7 @@ Pedro Oliveira,11122233344,pedro@exemplo.com,01/10,07717961000160,Assistente Adm
 
       // Parse CSV (simple implementation)
       const headers = lines[0].split(',').map(h => h.trim());
-      const expectedHeaders = ['nome_completo', 'cpf', 'email', 'aniversario', 'unidade', 'cargo'];
+      const expectedHeaders = ['nome_completo', 'cpf', 'aniversario', 'unidade', 'cargo'];
       
       const hasValidHeaders = expectedHeaders.every(h => headers.includes(h));
       if (!hasValidHeaders) {
@@ -51,10 +51,9 @@ Pedro Oliveira,11122233344,pedro@exemplo.com,01/10,07717961000160,Assistente Adm
         return {
           nome_completo: values[0],
           cpf: values[1],
-          email: values[2],
-          aniversario: values[3],
-          unidade: values[4],
-          cargo: values[5],
+          aniversario: values[2],
+          unidade: values[3],
+          cargo: values[4],
         };
       });
 
@@ -89,7 +88,6 @@ Pedro Oliveira,11122233344,pedro@exemplo.com,01/10,07717961000160,Assistente Adm
             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
               <li>nome_completo</li>
               <li>cpf (apenas números)</li>
-              <li>email</li>
               <li>aniversario (formato DD/MM, ex: 01/10)</li>
               <li>unidade (nome da unidade)</li>
               <li>cargo (texto livre)</li>
