@@ -45,7 +45,7 @@ const formSchema = z.object({
   details: z.string().min(10, 'Descreva os detalhes (mínimo 10 caracteres)'),
 });
 
-export function NewBenefitDialog() {
+export function NewBenefitDialog({ onSuccess }: { onSuccess?: () => void }) {
   const [open, setOpen] = useState(false);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(false);
@@ -102,6 +102,7 @@ export function NewBenefitDialog() {
     
     setOpen(false);
     form.reset();
+    onSuccess?.();
   };
 
   return (

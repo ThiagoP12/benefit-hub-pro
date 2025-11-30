@@ -56,16 +56,33 @@ export default function Solicitacoes() {
   }, []);
 
   const fetchRequests = async () => {
-    const { data, error } = await supabase
+    // Buscar todas as solicitações
+    const { data: requestsData, error: requestsError } = await supabase
       .from('benefit_requests')
-      .select('id, protocol, benefit_type, status, created_at, profiles(full_name)')
+      .select('id, protocol, benefit_type, status, created_at, user_id')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching requests:', error);
-    } else {
-      setRequests(data as unknown as BenefitRequest[]);
+    if (requestsError) {
+      console.error('Error fetching requests:', requestsError);
+      setLoading(false);
+      return;
     }
+
+    // Buscar profiles para obter nomes
+    const { data: profilesData } = await supabase
+      .from('profiles')
+      .select('user_id, full_name');
+
+    // Combinar dados
+    const requestsWithProfiles = requestsData.map((request) => {
+      const profile = profilesData?.find((p) => p.user_id === request.user_id);
+      return {
+        ...request,
+        profiles: profile ? { full_name: profile.full_name } : null,
+      };
+    });
+
+    setRequests(requestsWithProfiles as unknown as BenefitRequest[]);
     setLoading(false);
   };
 
@@ -105,7 +122,7 @@ export default function Solicitacoes() {
             </p>
           </div>
           <div className="flex gap-3">
-            <NewBenefitDialog />
+            <NewBenefitDialog onSuccess={fetchRequests} />
             <Button variant="outline" className="gap-2">
               <Download className="h-4 w-4" />
               Exportar
