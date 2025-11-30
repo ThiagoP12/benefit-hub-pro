@@ -47,13 +47,13 @@ export interface Log {
 }
 
 export const benefitTypeLabels: Record<BenefitType, string> = {
-  autoescola: 'Autoescola',
-  farmacia: 'Farmácia',
-  oficina: 'Oficina',
-  vale_gas: 'Vale Gás',
-  papelaria: 'Papelaria',
-  otica: 'Ótica',
-  outros: 'Outros',
+  autoescola: '🚗 Autoescola',
+  farmacia: '💊 Farmácia',
+  oficina: '🔧 Oficina',
+  vale_gas: '⛽ Vale Gás',
+  papelaria: '📝 Papelaria',
+  otica: '👓 Ótica',
+  outros: '📋 Outros',
 };
 
 export const statusLabels: Record<BenefitStatus, string> = {
