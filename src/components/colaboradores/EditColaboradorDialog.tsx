@@ -82,8 +82,10 @@ export function EditColaboradorDialog({
 
   const formatBirthday = (value: string) => {
     const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 4) {
-      return numbers.replace(/(\d{2})(\d)/, '$1/$2');
+    if (numbers.length <= 8) {
+      return numbers
+        .replace(/(\d{2})(\d)/, '$1/$2')
+        .replace(/(\d{2})(\d)/, '$1/$2');
     }
     return value;
   };
@@ -164,8 +166,8 @@ export function EditColaboradorDialog({
               required
               value={formData.birthday}
               onChange={handleBirthdayChange}
-              placeholder="01/10"
-              maxLength={5}
+              placeholder="01/10/1990"
+              maxLength={10}
             />
           </div>
 
