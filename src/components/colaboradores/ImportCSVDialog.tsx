@@ -10,9 +10,9 @@ export function ImportCSVDialog({ onSuccess }: { onSuccess?: () => void }) {
 
   const handleDownloadExample = () => {
     const csvContent = `nome_completo,cpf,aniversario,unidade,cargo
-João da Silva,12345678901,15/03,Revalle Juazeiro,Vendedor
-Maria Santos,98765432109,22/07,Revalle Bonfim,Gerente
-Pedro Oliveira,11122233344,01/10,07717961000160,Assistente Administrativo`;
+João da Silva,12345678901,15/03/1990,Revalle Juazeiro,Vendedor
+Maria Santos,98765432109,22/07/1985,Revalle Bonfim,Gerente
+Pedro Oliveira,11122233344,01/10/1992,07717961000160,Assistente Administrativo`;
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -88,7 +88,7 @@ Pedro Oliveira,11122233344,01/10,07717961000160,Assistente Administrativo`;
             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
               <li>nome_completo</li>
               <li>cpf (apenas números)</li>
-              <li>aniversario (formato DD/MM, ex: 01/10)</li>
+              <li>aniversario (formato DD/MM/YYYY, ex: 01/10/1990)</li>
               <li>unidade (nome da unidade)</li>
               <li>cargo (texto livre)</li>
             </ul>
