@@ -1,9 +1,9 @@
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Button } from '@/components/ui/button';
-import { Plus, Building2, Users, FileText, MapPin } from 'lucide-react';
+import { Building2, Users, FileText, MapPin } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { NewUnidadeDialog } from '@/components/unidades/NewUnidadeDialog';
 
 interface Unit {
   id?: string;
@@ -12,17 +12,17 @@ interface Unit {
 }
 
 const DEFAULT_UNITS: Unit[] = [
-  { id: 'default-1', name: 'Revalle Juazeiro', code: 'RVL-JUA' },
-  { id: 'default-2', name: 'Revalle Bonfim', code: 'RVL-BON' },
-  { id: 'default-3', name: 'Revalle Petrolina', code: 'RVL-PET' },
-  { id: 'default-4', name: 'Revalle Ribeira do Pombal', code: 'RVL-RIB' },
-  { id: 'default-5', name: 'Revalle Paulo Afonso', code: 'RVL-PAU' },
-  { id: 'default-6', name: 'Revalle Alagoinhas', code: 'RVL-ALA' },
-  { id: 'default-7', name: 'Revalle Serrinha', code: 'RVL-SER' },
+  { id: 'default-1', name: 'Revalle Juazeiro', code: '04690106000115' },
+  { id: 'default-2', name: 'Revalle Bonfim', code: '04690106000387' },
+  { id: 'default-3', name: 'Revalle Petrolina', code: '07717961000160' },
+  { id: 'default-4', name: 'Revalle Ribeira do Pombal', code: '28098474000137' },
+  { id: 'default-5', name: 'Revalle Paulo Afonso', code: '28098474000218' },
+  { id: 'default-6', name: 'Revalle Alagoinhas', code: '54677520000162' },
+  { id: 'default-7', name: 'Revalle Serrinha', code: '54677520000243' },
 ];
 
 export default function Unidades() {
-  const { data: units, isLoading } = useQuery({
+  const { data: units, isLoading, refetch } = useQuery({
     queryKey: ['units'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -68,10 +68,7 @@ export default function Unidades() {
               Gerencie as unidades da empresa
             </p>
           </div>
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
-            Nova Unidade
-          </Button>
+          <NewUnidadeDialog onSuccess={() => refetch()} />
         </div>
 
         {/* Grid */}
