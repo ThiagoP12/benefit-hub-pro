@@ -114,27 +114,43 @@ export default function Solicitacoes() {
   };
 
   const handleViewDetails = async (requestId: string) => {
-    const { data, error } = await supabase
+    // Buscar a solicitação
+    const { data: requestData, error: requestError } = await supabase
       .from('benefit_requests')
-      .select(`
-        *,
-        profiles (
-          full_name,
-          cpf,
-          units (
-            name
-          )
-        )
-      `)
+      .select('*')
       .eq('id', requestId)
       .single();
 
-    if (error) {
-      console.error('Error fetching request details:', error);
+    if (requestError) {
+      console.error('Error fetching request details:', requestError);
       return;
     }
 
-    setSelectedRequest(data);
+    // Buscar o perfil do usuário
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select(`
+        full_name,
+        cpf,
+        unit_id,
+        units (
+          name
+        )
+      `)
+      .eq('user_id', requestData.user_id)
+      .single();
+
+    if (profileError) {
+      console.error('Error fetching profile:', profileError);
+    }
+
+    // Combinar os dados
+    const combinedData = {
+      ...requestData,
+      profiles: profileData,
+    };
+
+    setSelectedRequest(combinedData);
     setDetailsOpen(true);
   };
 
