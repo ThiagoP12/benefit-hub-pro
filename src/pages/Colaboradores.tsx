@@ -4,7 +4,7 @@ import { roleLabels, UserRole } from '@/types/benefits';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Building2, Mail } from 'lucide-react';
+import { Search, Building2, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NewColaboradorDialog } from '@/components/colaboradores/NewColaboradorDialog';
@@ -18,6 +18,7 @@ interface Profile {
   full_name: string;
   email: string;
   cpf: string | null;
+  birthday: string | null;
   units: {
     name: string;
   } | null;
@@ -41,7 +42,7 @@ export default function Colaboradores() {
     // Buscar profiles com unit_id
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, user_id, full_name, email, cpf, unit_id')
+      .select('id, user_id, full_name, email, cpf, birthday, unit_id')
       .order('full_name');
 
     if (profilesError) {
@@ -181,10 +182,12 @@ export default function Colaboradores() {
                 </div>
                 
                 <div className="mt-4 space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Mail className="h-4 w-4" />
-                    <span className="truncate">{profile.email}</span>
-                  </div>
+                  {profile.birthday && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <span>Aniversário: {profile.birthday}</span>
+                    </div>
+                  )}
                   {profile.units && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Building2 className="h-4 w-4" />

@@ -23,6 +23,7 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
     full_name: '',
     cpf: '',
     email: '',
+    birthday: '',
     unit_id: '',
     role: '',
   });
@@ -57,6 +58,7 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
           full_name: formData.full_name,
           email: formData.email,
           cpf: formData.cpf,
+          birthday: formData.birthday,
           unit_id: formData.unit_id,
         }])
         .select()
@@ -71,6 +73,7 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
         full_name: '',
         cpf: '',
         email: '',
+        birthday: '',
         unit_id: '',
         role: '',
       });
@@ -128,6 +131,18 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="email@exemplo.com"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="birthday">Data de Aniversário *</Label>
+            <Input
+              id="birthday"
+              required
+              value={formData.birthday}
+              onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
+              placeholder="01/10"
+              maxLength={5}
             />
           </div>
 
