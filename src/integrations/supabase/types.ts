@@ -14,16 +14,230 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      benefit_requests: {
+        Row: {
+          approved_value: number | null
+          benefit_type: Database["public"]["Enums"]["benefit_type"]
+          created_at: string
+          details: string | null
+          id: string
+          protocol: string
+          requested_value: number | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["benefit_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_value?: number | null
+          benefit_type: Database["public"]["Enums"]["benefit_type"]
+          created_at?: string
+          details?: string | null
+          id?: string
+          protocol: string
+          requested_value?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["benefit_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_value?: number | null
+          benefit_type?: Database["public"]["Enums"]["benefit_type"]
+          created_at?: string
+          details?: string | null
+          id?: string
+          protocol?: string
+          requested_value?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["benefit_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      payment_receipts: {
+        Row: {
+          benefit_request_id: string
+          file_name: string
+          file_url: string
+          id: string
+          uploaded_at: string
+        }
+        Insert: {
+          benefit_request_id: string
+          file_name: string
+          file_url: string
+          id?: string
+          uploaded_at?: string
+        }
+        Update: {
+          benefit_request_id?: string
+          file_name?: string
+          file_url?: string
+          id?: string
+          uploaded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_receipts_benefit_request_id_fkey"
+            columns: ["benefit_request_id"]
+            isOneToOne: false
+            referencedRelation: "benefit_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          cpf: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          unit_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          cpf?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          unit_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          cpf?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          unit_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      units: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "gestor" | "colaborador"
+      benefit_status:
+        | "aberta"
+        | "em_analise"
+        | "aprovada"
+        | "concluida"
+        | "recusada"
+      benefit_type:
+        | "auxilio_alimentacao"
+        | "auxilio_creche"
+        | "auxilio_educacao"
+        | "auxilio_home_office"
+        | "auxilio_moradia"
+        | "auxilio_saude"
+        | "auxilio_transporte"
+        | "vale_cultura"
+        | "outros"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +364,26 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "gestor", "colaborador"],
+      benefit_status: [
+        "aberta",
+        "em_analise",
+        "aprovada",
+        "concluida",
+        "recusada",
+      ],
+      benefit_type: [
+        "auxilio_alimentacao",
+        "auxilio_creche",
+        "auxilio_educacao",
+        "auxilio_home_office",
+        "auxilio_moradia",
+        "auxilio_saude",
+        "auxilio_transporte",
+        "vale_cultura",
+        "outros",
+      ],
+    },
   },
 } as const

@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   LayoutDashboard,
   FileText,
@@ -9,8 +10,8 @@ import {
   MessageSquare,
   LogOut,
   Receipt,
-  AlertCircle,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -24,6 +25,21 @@ const navigation = [
 
 export function Sidebar() {
   const location = useLocation();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success('Você saiu da sua conta');
+  };
+
+  const userInitials = user?.user_metadata?.full_name
+    ?.split(' ')
+    .map((n: string) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2) || user?.email?.slice(0, 2).toUpperCase() || 'U';
+
+  const userName = user?.user_metadata?.full_name || user?.email || 'Usuário';
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar border-r border-sidebar-border">
@@ -34,8 +50,8 @@ export function Sidebar() {
             <FileText className="h-5 w-5 text-sidebar-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-sidebar-foreground">Convenia</h1>
-            <p className="text-xs text-sidebar-muted">Gestão de DP</p>
+            <h1 className="text-lg font-semibold text-sidebar-foreground">Revalle</h1>
+            <p className="text-xs text-sidebar-muted">Gestão de Benefícios</p>
           </div>
         </div>
 
@@ -70,13 +86,17 @@ export function Sidebar() {
         <div className="border-t border-sidebar-border p-4">
           <div className="flex items-center gap-3 rounded-lg p-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sidebar-accent text-sidebar-accent-foreground text-sm font-semibold">
-              PS
+              {userInitials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">Patricia Silva</p>
-              <p className="text-xs text-sidebar-muted truncate">Administrador</p>
+              <p className="text-sm font-medium text-sidebar-foreground truncate">{userName}</p>
+              <p className="text-xs text-sidebar-muted truncate">Colaborador</p>
             </div>
-            <button className="p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-muted hover:text-sidebar-foreground transition-colors">
+            <button 
+              onClick={handleSignOut}
+              className="p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-muted hover:text-sidebar-foreground transition-colors"
+              title="Sair"
+            >
               <LogOut className="h-4 w-4" />
             </button>
           </div>
