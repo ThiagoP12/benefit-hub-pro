@@ -9,14 +9,12 @@ import {
   Settings,
   MessageSquare,
   LogOut,
-  Receipt,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Benefícios', href: '/solicitacoes', icon: FileText },
-  { name: 'Recibos', href: '/recibos', icon: Receipt },
   { name: 'Colaboradores', href: '/colaboradores', icon: Users, badge: 'Em Dev' },
   { name: 'Unidades', href: '/unidades', icon: Building2, badge: 'Em Dev' },
   { name: 'WhatsApp', href: '/whatsapp', icon: MessageSquare, badge: 'Em Dev' },

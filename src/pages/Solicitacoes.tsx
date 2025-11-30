@@ -94,13 +94,13 @@ export default function Solicitacoes() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os Tipos</SelectItem>
-              <SelectItem value="autoescola">Autoescola</SelectItem>
-              <SelectItem value="farmacia">Farmácia</SelectItem>
-              <SelectItem value="oficina">Oficina</SelectItem>
-              <SelectItem value="vale_gas">Vale Gás</SelectItem>
-              <SelectItem value="papelaria">Papelaria</SelectItem>
-              <SelectItem value="otica">Ótica</SelectItem>
-              <SelectItem value="outros">Outros</SelectItem>
+              <SelectItem value="autoescola">🚗 Autoescola</SelectItem>
+              <SelectItem value="farmacia">💊 Farmácia</SelectItem>
+              <SelectItem value="oficina">🔧 Oficina</SelectItem>
+              <SelectItem value="vale_gas">⛽ Vale Gás</SelectItem>
+              <SelectItem value="papelaria">📝 Papelaria</SelectItem>
+              <SelectItem value="otica">👓 Ótica</SelectItem>
+              <SelectItem value="outros">📋 Outros</SelectItem>
             </SelectContent>
           </Select>
         </div>

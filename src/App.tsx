@@ -7,7 +7,6 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Solicitacoes from "./pages/Solicitacoes";
-import Recibos from "./pages/Recibos";
 import Colaboradores from "./pages/Colaboradores";
 import Unidades from "./pages/Unidades";
 import WhatsApp from "./pages/WhatsApp";
@@ -28,7 +27,6 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/solicitacoes" element={<ProtectedRoute><Solicitacoes /></ProtectedRoute>} />
-            <Route path="/recibos" element={<ProtectedRoute><Recibos /></ProtectedRoute>} />
             <Route path="/colaboradores" element={<ProtectedRoute><Colaboradores /></ProtectedRoute>} />
             <Route path="/unidades" element={<ProtectedRoute><Unidades /></ProtectedRoute>} />
             <Route path="/whatsapp" element={<ProtectedRoute><WhatsApp /></ProtectedRoute>} />
