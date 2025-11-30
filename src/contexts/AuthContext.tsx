@@ -1,60 +1,42 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
-  isAuthenticated: boolean;
-  username: string | null;
-  login: (username: string, password: string) => boolean;
-  logout: () => void;
+  user: User | null;
+  session: Session | null;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const VALID_USERNAME = 'dp';
-const VALID_PASSWORD = 'admin123';
-const AUTH_KEY = 'revalle_auth';
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar se há sessão salva
-    const savedAuth = localStorage.getItem(AUTH_KEY);
-    if (savedAuth) {
-      try {
-        const { username: savedUsername } = JSON.parse(savedAuth);
-        setIsAuthenticated(true);
-        setUsername(savedUsername);
-      } catch {
-        localStorage.removeItem(AUTH_KEY);
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setIsLoading(false);
       }
-    }
-    setLoading(false);
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = (inputUsername: string, inputPassword: string): boolean => {
-    if (inputUsername === VALID_USERNAME && inputPassword === VALID_PASSWORD) {
-      setIsAuthenticated(true);
-      setUsername(inputUsername);
-      localStorage.setItem(AUTH_KEY, JSON.stringify({ username: inputUsername }));
-      return true;
-    }
-    return false;
-  };
-
-  const logout = () => {
-    setIsAuthenticated(false);
-    setUsername(null);
-    localStorage.removeItem(AUTH_KEY);
-  };
-
-  if (loading) {
-    return null;
-  }
-
   return (
-    <AuthContext.Provider value={{ isAuthenticated, username, login, logout }}>
+    <AuthContext.Provider value={{ user, session, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

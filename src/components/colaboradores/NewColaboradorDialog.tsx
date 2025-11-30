@@ -62,9 +62,22 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
     setLoading(true);
 
     try {
-      // In a real app, you would create the auth user first
-      // For now, we'll just show a message
-      toast.info('Funcionalidade em desenvolvimento. Em produção, isso criaria o usuário e enviaria um email de convite.');
+      // Create profile for new collaborator
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .insert([{
+          user_id: crypto.randomUUID(), // Temporary: In production, create auth user first
+          full_name: formData.full_name,
+          email: formData.email,
+          cpf: formData.cpf,
+          unit_id: formData.unit_id,
+        }])
+        .select()
+        .single();
+
+      if (profileError) throw profileError;
+
+      toast.success('Colaborador cadastrado com sucesso!');
       
       setOpen(false);
       setFormData({
@@ -75,9 +88,9 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
         role: '',
       });
       onSuccess?.();
-    } catch (error) {
-      toast.error('Erro ao cadastrar colaborador');
-      console.error(error);
+    } catch (error: any) {
+      console.error('Erro ao cadastrar colaborador:', error);
+      toast.error(error.message || 'Erro ao cadastrar colaborador');
     } finally {
       setLoading(false);
     }
