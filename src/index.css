@@ -63,6 +63,15 @@
     --chart-3: 199 89% 48%;
     --chart-4: 38 92% 50%;
     --chart-5: 280 65% 60%;
+
+    /* Benefit category colors */
+    --benefit-autoescola: 210 100% 50%;
+    --benefit-farmacia: 142 76% 36%;
+    --benefit-oficina: 25 95% 53%;
+    --benefit-vale-gas: 45 93% 47%;
+    --benefit-papelaria: 280 65% 60%;
+    --benefit-otica: 187 85% 43%;
+    --benefit-outros: 220 9% 46%;
   }
 
   .dark {

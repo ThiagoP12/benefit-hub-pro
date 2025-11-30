@@ -1,17 +1,34 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { getBenefitTypeData } from '@/data/mockData';
-import { benefitTypeLabels } from '@/types/benefits';
+import { BenefitType, benefitTypeLabels } from '@/types/benefits';
 
-const COLORS = [
-  'hsl(var(--chart-1))',
-  'hsl(var(--chart-2))',
-  'hsl(var(--chart-3))',
-  'hsl(var(--chart-4))',
-  'hsl(var(--chart-5))',
-];
+const BENEFIT_COLORS: Record<BenefitType, string> = {
+  autoescola: 'hsl(var(--benefit-autoescola))',
+  farmacia: 'hsl(var(--benefit-farmacia))',
+  oficina: 'hsl(var(--benefit-oficina))',
+  vale_gas: 'hsl(var(--benefit-vale-gas))',
+  papelaria: 'hsl(var(--benefit-papelaria))',
+  otica: 'hsl(var(--benefit-otica))',
+  outros: 'hsl(var(--benefit-outros))',
+};
 
-export function BenefitTypeChart() {
-  const data = getBenefitTypeData().map(item => ({
+interface BenefitTypeChartProps {
+  data?: { type: BenefitType; count: number }[];
+}
+
+export function BenefitTypeChart({ data: rawData }: BenefitTypeChartProps) {
+  if (!rawData || rawData.length === 0) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-6 animate-slide-up" style={{ animationDelay: '100ms' }}>
+        <h3 className="text-lg font-semibold text-foreground mb-6">Por Tipo de Benefício</h3>
+        <div className="h-80 flex items-center justify-center text-muted-foreground">
+          Nenhum dado disponível
+        </div>
+      </div>
+    );
+  }
+
+  const data = rawData.map(item => ({
+    type: item.type,
     name: benefitTypeLabels[item.type],
     value: item.count,
   }));
@@ -31,8 +48,8 @@ export function BenefitTypeChart() {
               paddingAngle={2}
               dataKey="value"
             >
-              {data.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={BENEFIT_COLORS[entry.type]} />
               ))}
             </Pie>
             <Tooltip

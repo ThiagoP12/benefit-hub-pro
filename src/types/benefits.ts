@@ -1,49 +1,54 @@
+// Alinhado com os enums do banco de dados Supabase
 export type BenefitType = 'autoescola' | 'farmacia' | 'oficina' | 'vale_gas' | 'papelaria' | 'otica' | 'outros';
 
-export type BenefitStatus = 'aberto' | 'analise' | 'aprovado' | 'negado' | 'concluido';
+export type BenefitStatus = 'aberta' | 'em_analise' | 'aprovada' | 'recusada' | 'concluida';
 
-export type UserRole = 'colaborador' | 'dp' | 'financeiro' | 'admin';
+export type UserRole = 'colaborador' | 'gestor' | 'admin';
 
 export interface Unit {
-  id: number;
+  id: string;
   name: string;
-  region: string;
-  createdAt: Date;
+  code: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface User {
-  id: number;
+  id: string;
   name: string;
   cpf: string;
   phone: string;
-  unitId: number;
+  unitId: string;
   unit?: Unit;
   role: UserRole;
   createdAt: Date;
 }
 
 export interface BenefitRequest {
-  id: number;
+  id: string;
   protocol: string;
-  userId: number;
+  user_id: string;
   user?: User;
-  benefitType: BenefitType;
+  benefit_type: BenefitType;
   status: BenefitStatus;
   details: string;
-  attachments: string[];
-  resolverId?: number;
-  resolver?: User;
-  createdAt: Date;
-  updatedAt: Date;
+  requested_value?: number;
+  approved_value?: number;
+  reviewed_by?: string;
+  reviewed_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Log {
-  id: number;
-  requestId: number;
+  id: string;
+  entity_type: string;
+  entity_id: string;
   action: string;
-  userId: number;
+  user_id: string;
   user?: User;
-  createdAt: Date;
+  details?: any;
+  created_at: string;
 }
 
 export const benefitTypeLabels: Record<BenefitType, string> = {
@@ -57,16 +62,15 @@ export const benefitTypeLabels: Record<BenefitType, string> = {
 };
 
 export const statusLabels: Record<BenefitStatus, string> = {
-  aberto: 'Aberto',
-  analise: 'Em Análise',
-  aprovado: 'Aprovado',
-  negado: 'Negado',
-  concluido: 'Concluído',
+  aberta: 'Aberto',
+  em_analise: 'Em Análise',
+  aprovada: 'Aprovado',
+  recusada: 'Recusado',
+  concluida: 'Concluído',
 };
 
 export const roleLabels: Record<UserRole, string> = {
   colaborador: 'Colaborador',
-  dp: 'Depart. Pessoal',
-  financeiro: 'Financeiro',
+  gestor: 'Gestor',
   admin: 'Administrador',
 };
