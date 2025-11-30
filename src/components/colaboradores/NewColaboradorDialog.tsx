@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { UserRole, roleLabels } from '@/types/benefits';
 
 interface Unit {
   id: string;
@@ -24,7 +23,7 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
     cpf: '',
     email: '',
     unit_id: '',
-    role: 'colaborador' as UserRole,
+    role: '',
   });
 
   useEffect(() => {
@@ -53,7 +52,7 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
         cpf: '',
         email: '',
         unit_id: '',
-        role: 'colaborador',
+        role: '',
       });
       onSuccess?.();
     } catch (error) {
@@ -130,18 +129,13 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
 
           <div className="space-y-2">
             <Label htmlFor="role">Cargo *</Label>
-            <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value as UserRole })}>
-              <SelectTrigger id="role">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(roleLabels) as UserRole[]).map((role) => (
-                  <SelectItem key={role} value={role}>
-                    {roleLabels[role]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Input
+              id="role"
+              required
+              value={formData.role}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              placeholder="Ex: Vendedor, Gerente, Assistente"
+            />
           </div>
 
           <div className="flex gap-3 pt-4">
