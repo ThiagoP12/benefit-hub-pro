@@ -7,11 +7,11 @@ interface StatusBadgeProps {
 }
 
 const statusStyles: Record<BenefitStatus, string> = {
-  aberto: 'bg-info/15 text-info border-info/30',
-  analise: 'bg-warning/15 text-warning border-warning/30',
-  aprovado: 'bg-success/15 text-success border-success/30',
-  negado: 'bg-destructive/15 text-destructive border-destructive/30',
-  concluido: 'bg-muted text-muted-foreground border-border',
+  aberta: 'bg-info/15 text-info border-info/30',
+  em_analise: 'bg-warning/15 text-warning border-warning/30',
+  aprovada: 'bg-success/15 text-success border-success/30',
+  recusada: 'bg-destructive/15 text-destructive border-destructive/30',
+  concluida: 'bg-muted text-muted-foreground border-border',
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {

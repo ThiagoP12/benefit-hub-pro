@@ -80,6 +80,15 @@ export default {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+        benefit: {
+          autoescola: "hsl(var(--benefit-autoescola))",
+          farmacia: "hsl(var(--benefit-farmacia))",
+          oficina: "hsl(var(--benefit-oficina))",
+          "vale-gas": "hsl(var(--benefit-vale-gas))",
+          papelaria: "hsl(var(--benefit-papelaria))",
+          otica: "hsl(var(--benefit-otica))",
+          outros: "hsl(var(--benefit-outros))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
