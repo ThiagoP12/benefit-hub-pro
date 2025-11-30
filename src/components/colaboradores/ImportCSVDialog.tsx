@@ -9,10 +9,9 @@ export function ImportCSVDialog({ onSuccess }: { onSuccess?: () => void }) {
   const [loading, setLoading] = useState(false);
 
   const handleDownloadExample = () => {
-    const csvContent = `nome_completo,cpf,aniversario,unidade,cargo
-João da Silva,12345678901,15/03/1990,Revalle Juazeiro,Vendedor
-Maria Santos,98765432109,22/07/1985,Revalle Bonfim,Gerente
-Pedro Oliveira,11122233344,01/10/1992,07717961000160,Assistente Administrativo`;
+    const csvContent = `nome_completo,cpf,data_aniversario,telefone,sexo,cargo,codigo_unidade
+João Silva,123.456.789-00,01/10/1990,(11) 98765-4321,masculino,Analista,0001
+Maria Santos,987.654.321-00,15/05/1985,(11) 91234-5678,feminino,Gerente,0002`;
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -38,7 +37,7 @@ Pedro Oliveira,11122233344,01/10/1992,07717961000160,Assistente Administrativo`;
 
       // Parse CSV (simple implementation)
       const headers = lines[0].split(',').map(h => h.trim());
-      const expectedHeaders = ['nome_completo', 'cpf', 'aniversario', 'unidade', 'cargo'];
+      const expectedHeaders = ['nome_completo', 'cpf', 'data_aniversario', 'telefone', 'sexo', 'cargo', 'codigo_unidade'];
       
       const hasValidHeaders = expectedHeaders.every(h => headers.includes(h));
       if (!hasValidHeaders) {
@@ -49,11 +48,13 @@ Pedro Oliveira,11122233344,01/10/1992,07717961000160,Assistente Administrativo`;
       const data = lines.slice(1).map(line => {
         const values = line.split(',').map(v => v.trim());
         return {
-          nome_completo: values[0],
-          cpf: values[1],
-          aniversario: values[2],
-          unidade: values[3],
-          cargo: values[4],
+          nome_completo: values[headers.indexOf('nome_completo')],
+          cpf: values[headers.indexOf('cpf')],
+          data_aniversario: values[headers.indexOf('data_aniversario')],
+          telefone: values[headers.indexOf('telefone')],
+          sexo: values[headers.indexOf('sexo')],
+          cargo: values[headers.indexOf('cargo')],
+          codigo_unidade: values[headers.indexOf('codigo_unidade')],
         };
       });
 
@@ -86,11 +87,13 @@ Pedro Oliveira,11122233344,01/10/1992,07717961000160,Assistente Administrativo`;
           <div className="rounded-lg border border-border bg-muted/50 p-4">
             <h4 className="font-medium mb-2">Formato do arquivo CSV:</h4>
             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-              <li>nome_completo</li>
-              <li>cpf (apenas números)</li>
-              <li>aniversario (formato DD/MM/YYYY, ex: 01/10/1990)</li>
-              <li>unidade (nome da unidade)</li>
-              <li>cargo (texto livre)</li>
+              <li><strong>nome_completo</strong>: Nome completo do colaborador</li>
+              <li><strong>cpf</strong>: CPF do colaborador (com ou sem formatação)</li>
+              <li><strong>data_aniversario</strong>: Data no formato DD/MM/YYYY</li>
+              <li><strong>telefone</strong>: Telefone com DDD (ex: (11) 98765-4321)</li>
+              <li><strong>sexo</strong>: masculino ou feminino</li>
+              <li><strong>cargo</strong>: Cargo do colaborador</li>
+              <li><strong>codigo_unidade</strong>: Código da unidade (ex: 0001)</li>
             </ul>
           </div>
 
