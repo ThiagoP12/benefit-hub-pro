@@ -23,21 +23,15 @@ const navigation = [
 
 export function Sidebar() {
   const location = useLocation();
-  const { user, signOut } = useAuth();
+  const { username, logout } = useAuth();
 
-  const handleSignOut = async () => {
-    await signOut();
+  const handleSignOut = () => {
+    logout();
     toast.success('Você saiu da sua conta');
   };
 
-  const userInitials = user?.user_metadata?.full_name
-    ?.split(' ')
-    .map((n: string) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2) || user?.email?.slice(0, 2).toUpperCase() || 'U';
-
-  const userName = user?.user_metadata?.full_name || user?.email || 'Usuário';
+  const userInitials = username?.slice(0, 2).toUpperCase() || 'DP';
+  const userName = username === 'dp' ? 'Depart. Pessoal' : username || 'Usuário';
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar border-r border-sidebar-border">
