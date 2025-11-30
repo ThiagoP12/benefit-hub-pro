@@ -57,14 +57,14 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
       <div className="flex flex-wrap items-center gap-3">
         {/* Unit Filter */}
         <Select
-          value={filters.unitId || ''}
-          onValueChange={(value) => onFiltersChange({ ...filters, unitId: value || null })}
+          value={filters.unitId || 'all'}
+          onValueChange={(value) => onFiltersChange({ ...filters, unitId: value === 'all' ? null : value })}
         >
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Todas as unidades" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todas as unidades</SelectItem>
+            <SelectItem value="all">Todas as unidades</SelectItem>
             {units.map((unit) => (
               <SelectItem key={unit.id} value={unit.id}>
                 {unit.name}
@@ -75,14 +75,14 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
 
         {/* Benefit Type Filter */}
         <Select
-          value={filters.benefitType || ''}
-          onValueChange={(value) => onFiltersChange({ ...filters, benefitType: (value as BenefitType) || null })}
+          value={filters.benefitType || 'all'}
+          onValueChange={(value) => onFiltersChange({ ...filters, benefitType: value === 'all' ? null : (value as BenefitType) })}
         >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Tipo de benefício" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos os tipos</SelectItem>
+            <SelectItem value="all">Todos os tipos</SelectItem>
             {(Object.keys(benefitTypeLabels) as BenefitType[]).map((type) => (
               <SelectItem key={type} value={type}>
                 {benefitTypeLabels[type]}
@@ -93,14 +93,14 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
 
         {/* Status Filter */}
         <Select
-          value={filters.status || ''}
-          onValueChange={(value) => onFiltersChange({ ...filters, status: (value as BenefitStatus) || null })}
+          value={filters.status || 'all'}
+          onValueChange={(value) => onFiltersChange({ ...filters, status: value === 'all' ? null : (value as BenefitStatus) })}
         >
           <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="Situação" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todas as situações</SelectItem>
+            <SelectItem value="all">Todas as situações</SelectItem>
             {(Object.keys(statusLabels) as BenefitStatus[]).map((status) => (
               <SelectItem key={status} value={status}>
                 {statusLabels[status]}
