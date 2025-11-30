@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { NewColaboradorDialog } from '@/components/colaboradores/NewColaboradorDialog';
 import { ImportCSVDialog } from '@/components/colaboradores/ImportCSVDialog';
 import { DeleteColaboradorDialog } from '@/components/colaboradores/DeleteColaboradorDialog';
+import { EditColaboradorDialog } from '@/components/colaboradores/EditColaboradorDialog';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 
 interface Profile {
@@ -18,6 +19,7 @@ interface Profile {
   full_name: string;
   cpf: string | null;
   birthday: string | null;
+  unit_id: string | null;
   units: {
     name: string;
   } | null;
@@ -199,6 +201,17 @@ export default function Colaboradores() {
                     {getRoleLabel(profile)}
                   </Badge>
                   <div className="flex gap-2">
+                    <EditColaboradorDialog
+                      profile={{
+                        id: profile.id,
+                        user_id: profile.user_id,
+                        full_name: profile.full_name,
+                        cpf: profile.cpf,
+                        birthday: profile.birthday,
+                        unit_id: profile.unit_id,
+                      }}
+                      onSuccess={fetchProfiles}
+                    />
                     <DeleteColaboradorDialog
                       profileId={profile.id}
                       userId={profile.user_id}

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatCnpj } from '@/lib/utils';
@@ -15,22 +15,44 @@ interface Unit {
   code: string;
 }
 
-export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) {
+interface Profile {
+  id: string;
+  user_id: string;
+  full_name: string;
+  cpf: string | null;
+  birthday: string | null;
+  unit_id: string | null;
+}
+
+export function EditColaboradorDialog({ 
+  profile, 
+  onSuccess 
+}: { 
+  profile: Profile;
+  onSuccess?: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [units, setUnits] = useState<Unit[]>([]);
   const [formData, setFormData] = useState({
-    full_name: '',
-    cpf: '',
-    birthday: '',
-    unit_id: '',
+    full_name: profile.full_name,
+    cpf: profile.cpf || '',
+    birthday: profile.birthday || '',
+    unit_id: profile.unit_id || '',
   });
 
   useEffect(() => {
     if (open) {
       fetchUnits();
+      // Reset form with current profile data
+      setFormData({
+        full_name: profile.full_name,
+        cpf: profile.cpf || '',
+        birthday: profile.birthday || '',
+        unit_id: profile.unit_id || '',
+      });
     }
-  }, [open]);
+  }, [open, profile]);
 
   const fetchUnits = async () => {
     const { data, error } = await supabase.from('units').select('*').order('name');
@@ -38,7 +60,6 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
       console.error('Erro ao buscar unidades:', error);
       toast.error('Erro ao carregar unidades');
     } else if (data && data.length > 0) {
-      console.log('Unidades carregadas do banco:', data);
       setUnits(data as Unit[]);
     }
   };
@@ -77,47 +98,24 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
     setLoading(true);
 
     try {
-      // Create profile for new collaborator
-      const { data: profileData, error: profileError } = await supabase
+      const { error } = await supabase
         .from('profiles')
-        .insert([{
-          user_id: crypto.randomUUID(),
+        .update({
           full_name: formData.full_name,
-          email: `${formData.cpf.replace(/\D/g, '')}@temp.com`, // Email temporário baseado no CPF
           cpf: formData.cpf.replace(/\D/g, ''),
           birthday: formData.birthday,
           unit_id: formData.unit_id,
-        }])
-        .select()
-        .single();
+        })
+        .eq('id', profile.id);
 
-      if (profileError) throw profileError;
+      if (error) throw error;
 
-      // Create default user role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert([{
-          user_id: profileData.user_id,
-          role: 'colaborador',
-        }]);
-
-      if (roleError) {
-        console.error('Erro ao criar role:', roleError);
-      }
-
-      toast.success('Colaborador cadastrado com sucesso!');
-      
+      toast.success('Colaborador atualizado com sucesso!');
       setOpen(false);
-      setFormData({
-        full_name: '',
-        cpf: '',
-        birthday: '',
-        unit_id: '',
-      });
       onSuccess?.();
     } catch (error: any) {
-      console.error('Erro ao cadastrar colaborador:', error);
-      toast.error(error.message || 'Erro ao cadastrar colaborador');
+      console.error('Erro ao atualizar colaborador:', error);
+      toast.error(error.message || 'Erro ao atualizar colaborador');
     } finally {
       setLoading(false);
     }
@@ -126,14 +124,14 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Novo Colaborador
+        <Button variant="ghost" size="sm" className="gap-2">
+          <Pencil className="h-4 w-4" />
+          Editar
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Cadastrar Novo Colaborador</DialogTitle>
+          <DialogTitle>Editar Colaborador</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -196,7 +194,7 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
               Cancelar
             </Button>
             <Button type="submit" className="flex-1" disabled={loading}>
-              {loading ? 'Cadastrando...' : 'Cadastrar'}
+              {loading ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </div>
         </form>
