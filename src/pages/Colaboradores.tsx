@@ -4,7 +4,7 @@ import { roleLabels, UserRole } from '@/types/benefits';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Building2, Calendar, Phone } from 'lucide-react';
+import { Search, Building2, Calendar, Phone, Briefcase } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NewColaboradorDialog } from '@/components/colaboradores/NewColaboradorDialog';
@@ -12,6 +12,14 @@ import { ImportCSVDialog } from '@/components/colaboradores/ImportCSVDialog';
 import { DeleteColaboradorDialog } from '@/components/colaboradores/DeleteColaboradorDialog';
 import { EditColaboradorDialog } from '@/components/colaboradores/EditColaboradorDialog';
 import { PaginationControls } from '@/components/ui/pagination-controls';
+
+const DEPARTAMENTOS_LABELS: Record<string, string> = {
+  '101': '101 – Puxada',
+  '201': '201 – Armazém',
+  '301': '301 – Administrativo',
+  '401': '401 – Vendas',
+  '501': '501 – Entrega',
+};
 
 interface Profile {
   id: string;
@@ -23,6 +31,7 @@ interface Profile {
   gender: string | null;
   position: string | null;
   unit_id: string | null;
+  departamento: string | null;
   units: {
     name: string;
   } | null;
@@ -43,10 +52,10 @@ export default function Colaboradores() {
   }, []);
 
   const fetchProfiles = async () => {
-    // Buscar profiles com unit_id
+    // Buscar profiles com unit_id e departamento
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, user_id, full_name, cpf, birthday, phone, gender, position, unit_id')
+      .select('id, user_id, full_name, cpf, birthday, phone, gender, position, unit_id, departamento')
       .order('full_name');
 
     if (profilesError) {
@@ -203,6 +212,12 @@ export default function Colaboradores() {
                       <span>{profile.units.name}</span>
                     </div>
                   )}
+                  {profile.departamento && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Briefcase className="h-4 w-4" />
+                      <span>{DEPARTAMENTOS_LABELS[profile.departamento] || profile.departamento}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
@@ -221,6 +236,7 @@ export default function Colaboradores() {
                         gender: profile.gender,
                         position: profile.position,
                         unit_id: profile.unit_id,
+                        departamento: profile.departamento,
                       }}
                       onSuccess={fetchProfiles}
                     />

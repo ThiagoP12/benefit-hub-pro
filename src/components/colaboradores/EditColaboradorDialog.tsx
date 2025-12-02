@@ -25,7 +25,16 @@ interface Profile {
   gender: string | null;
   position: string | null;
   unit_id: string | null;
+  departamento: string | null;
 }
+
+const DEPARTAMENTOS = [
+  { value: '101', label: '101 – Puxada' },
+  { value: '201', label: '201 – Armazém' },
+  { value: '301', label: '301 – Administrativo' },
+  { value: '401', label: '401 – Vendas' },
+  { value: '501', label: '501 – Entrega' },
+];
 
 export function EditColaboradorDialog({ 
   profile, 
@@ -39,12 +48,13 @@ export function EditColaboradorDialog({
   const [units, setUnits] = useState<Unit[]>([]);
   const [formData, setFormData] = useState({
     full_name: profile.full_name,
+    unit_id: profile.unit_id || '',
     cpf: profile.cpf || '',
+    departamento: profile.departamento || '',
     birthday: profile.birthday || '',
     phone: profile.phone || '',
     gender: profile.gender || '',
     position: profile.position || '',
-    unit_id: profile.unit_id || '',
   });
 
   useEffect(() => {
@@ -53,12 +63,13 @@ export function EditColaboradorDialog({
       // Reset form with current profile data
       setFormData({
         full_name: profile.full_name,
+        unit_id: profile.unit_id || '',
         cpf: profile.cpf || '',
+        departamento: profile.departamento || '',
         birthday: profile.birthday || '',
         phone: profile.phone || '',
         gender: profile.gender || '',
         position: profile.position || '',
-        unit_id: profile.unit_id || '',
       });
     }
   }, [open, profile]);
@@ -134,6 +145,7 @@ export function EditColaboradorDialog({
           gender: formData.gender,
           position: formData.position,
           unit_id: formData.unit_id,
+          departamento: formData.departamento,
         })
         .eq('id', profile.id);
 
@@ -171,6 +183,7 @@ export function EditColaboradorDialog({
           <DialogTitle>Editar Colaborador</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* 1. Nome completo */}
           <div className="space-y-2">
             <Label htmlFor="full_name">Nome Completo *</Label>
             <Input
@@ -182,66 +195,7 @@ export function EditColaboradorDialog({
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="cpf">CPF *</Label>
-            <Input
-              id="cpf"
-              required
-              value={formData.cpf}
-              onChange={handleCPFChange}
-              placeholder="000.000.000-00"
-              maxLength={14}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="birthday">Data de Aniversário *</Label>
-            <Input
-              id="birthday"
-              required
-              value={formData.birthday}
-              onChange={handleBirthdayChange}
-              placeholder="01/10/1990"
-              maxLength={10}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phone">Telefone *</Label>
-            <Input
-              id="phone"
-              required
-              value={formData.phone}
-              onChange={handlePhoneChange}
-              placeholder="(00) 00000-0000"
-              maxLength={15}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="gender">Sexo *</Label>
-            <Select value={formData.gender} onValueChange={(value) => setFormData({ ...formData, gender: value })}>
-              <SelectTrigger id="gender">
-                <SelectValue placeholder="Selecione o sexo" />
-              </SelectTrigger>
-              <SelectContent className="z-50">
-                <SelectItem value="masculino">Masculino</SelectItem>
-                <SelectItem value="feminino">Feminino</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="position">Cargo *</Label>
-            <Input
-              id="position"
-              required
-              value={formData.position}
-              onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-              placeholder="Ex: Analista, Gerente, etc."
-            />
-          </div>
-
+          {/* 2. Unidade */}
           <div className="space-y-2">
             <Label htmlFor="unit">Unidade *</Label>
             <Select value={formData.unit_id} onValueChange={(value) => setFormData({ ...formData, unit_id: value })}>
@@ -260,6 +214,88 @@ export function EditColaboradorDialog({
                 )}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* 3. CPF */}
+          <div className="space-y-2">
+            <Label htmlFor="cpf">CPF *</Label>
+            <Input
+              id="cpf"
+              required
+              value={formData.cpf}
+              onChange={handleCPFChange}
+              placeholder="000.000.000-00"
+              maxLength={14}
+            />
+          </div>
+
+          {/* 4. Departamento */}
+          <div className="space-y-2">
+            <Label htmlFor="departamento">Departamento *</Label>
+            <Select value={formData.departamento} onValueChange={(value) => setFormData({ ...formData, departamento: value })}>
+              <SelectTrigger id="departamento">
+                <SelectValue placeholder="Selecione o departamento" />
+              </SelectTrigger>
+              <SelectContent className="z-50">
+                {DEPARTAMENTOS.map((dept) => (
+                  <SelectItem key={dept.value} value={dept.value}>
+                    {dept.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 5. Data de aniversário */}
+          <div className="space-y-2">
+            <Label htmlFor="birthday">Data de Aniversário *</Label>
+            <Input
+              id="birthday"
+              required
+              value={formData.birthday}
+              onChange={handleBirthdayChange}
+              placeholder="01/10/1990"
+              maxLength={10}
+            />
+          </div>
+
+          {/* 6. Telefone */}
+          <div className="space-y-2">
+            <Label htmlFor="phone">Telefone *</Label>
+            <Input
+              id="phone"
+              required
+              value={formData.phone}
+              onChange={handlePhoneChange}
+              placeholder="(00) 00000-0000"
+              maxLength={15}
+            />
+          </div>
+
+          {/* 7. Sexo */}
+          <div className="space-y-2">
+            <Label htmlFor="gender">Sexo *</Label>
+            <Select value={formData.gender} onValueChange={(value) => setFormData({ ...formData, gender: value })}>
+              <SelectTrigger id="gender">
+                <SelectValue placeholder="Selecione o sexo" />
+              </SelectTrigger>
+              <SelectContent className="z-50">
+                <SelectItem value="masculino">Masculino</SelectItem>
+                <SelectItem value="feminino">Feminino</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 8. Cargo */}
+          <div className="space-y-2">
+            <Label htmlFor="position">Cargo *</Label>
+            <Input
+              id="position"
+              required
+              value={formData.position}
+              onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+              placeholder="Ex: Analista, Gerente, etc."
+            />
           </div>
 
           <div className="flex gap-3 pt-4">
