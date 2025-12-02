@@ -12,6 +12,8 @@ interface Unit {
   name: string;
 }
 
+const DEPARTAMENTOS_VALIDOS = ['101', '201', '301', '401', '501'];
+
 export function ImportCSVDialog({ onSuccess }: { onSuccess?: () => void }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -39,9 +41,9 @@ export function ImportCSVDialog({ onSuccess }: { onSuccess?: () => void }) {
 
   const handleDownloadExample = () => {
     const exampleUnit = units[0]?.code || '04690106000115';
-    const csvContent = `nome_completo,cpf,data_aniversario,telefone,sexo,cargo,codigo_unidade
-João Silva,12345678900,01/10/1990,(11) 98765-4321,masculino,Analista,${exampleUnit}
-Maria Santos,98765432100,15/05/1985,(11) 91234-5678,feminino,Gerente,${exampleUnit}`;
+    const csvContent = `nome_completo,cpf,data_aniversario,telefone,sexo,cargo,codigo_unidade,departamento
+João Silva,12345678900,01/10/1990,(11) 98765-4321,masculino,Analista,${exampleUnit},301
+Maria Santos,98765432100,15/05/1985,(11) 91234-5678,feminino,Gerente,${exampleUnit},401`;
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -70,7 +72,7 @@ Maria Santos,98765432100,15/05/1985,(11) 91234-5678,feminino,Gerente,${exampleUn
 
       // Parse CSV headers
       const headers = lines[0].split(',').map(h => h.trim());
-      const expectedHeaders = ['nome_completo', 'cpf', 'data_aniversario', 'telefone', 'sexo', 'cargo', 'codigo_unidade'];
+      const expectedHeaders = ['nome_completo', 'cpf', 'data_aniversario', 'telefone', 'sexo', 'cargo', 'codigo_unidade', 'departamento'];
       
       const hasValidHeaders = expectedHeaders.every(h => headers.includes(h));
       if (!hasValidHeaders) {
@@ -107,6 +109,7 @@ Maria Santos,98765432100,15/05/1985,(11) 91234-5678,feminino,Gerente,${exampleUn
           sexo: values[headers.indexOf('sexo')],
           cargo: values[headers.indexOf('cargo')],
           codigo_unidade: values[headers.indexOf('codigo_unidade')],
+          departamento: values[headers.indexOf('departamento')],
         };
 
         // Validate unit exists
@@ -128,6 +131,12 @@ Maria Santos,98765432100,15/05/1985,(11) 91234-5678,feminino,Gerente,${exampleUn
           continue;
         }
 
+        // Validate departamento
+        if (!DEPARTAMENTOS_VALIDOS.includes(rowData.departamento)) {
+          errors.push(`Linha ${i + 1}: Departamento "${rowData.departamento}" inválido. Use: ${DEPARTAMENTOS_VALIDOS.join(', ')}`);
+          continue;
+        }
+
         // Insert profile
         const { error: insertError } = await supabase
           .from('profiles')
@@ -139,6 +148,7 @@ Maria Santos,98765432100,15/05/1985,(11) 91234-5678,feminino,Gerente,${exampleUn
             gender: rowData.sexo.toLowerCase(),
             position: rowData.cargo,
             unit_id: unitId,
+            departamento: rowData.departamento,
             email: `${rowData.cpf}@temp.com`, // Temporary email
             user_id: crypto.randomUUID(), // Temporary user_id
           });
@@ -203,6 +213,18 @@ Maria Santos,98765432100,15/05/1985,(11) 91234-5678,feminino,Gerente,${exampleUn
               <li><strong>sexo</strong>: masculino ou feminino</li>
               <li><strong>cargo</strong>: Cargo do colaborador</li>
               <li><strong>codigo_unidade</strong>: CNPJ da unidade (apenas números)</li>
+              <li><strong>departamento</strong>: Código (101, 201, 301, 401 ou 501)</li>
+            </ul>
+          </div>
+
+          <div className="rounded-lg border border-border bg-muted/50 p-4">
+            <h4 className="font-medium mb-2">Departamentos disponíveis:</h4>
+            <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+              <li><code className="bg-background px-1 rounded">101</code> – Puxada</li>
+              <li><code className="bg-background px-1 rounded">201</code> – Armazém</li>
+              <li><code className="bg-background px-1 rounded">301</code> – Administrativo</li>
+              <li><code className="bg-background px-1 rounded">401</code> – Vendas</li>
+              <li><code className="bg-background px-1 rounded">501</code> – Entrega</li>
             </ul>
           </div>
 
