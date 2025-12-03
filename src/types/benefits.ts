@@ -63,10 +63,10 @@ export const benefitTypeLabels: Record<BenefitType, string> = {
 
 export const statusLabels: Record<BenefitStatus, string> = {
   aberta: 'Aberto',
-  em_analise: 'Em Análise',
+  em_analise: 'Em Andamento',
   aprovada: 'Aprovado',
-  recusada: 'Recusado',
-  concluida: 'Concluído',
+  recusada: 'Encerrado',
+  concluida: 'Encerrado',
 };
 
 export const roleLabels: Record<UserRole, string> = {
