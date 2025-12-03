@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { NewBenefitDialog } from '@/components/benefits/NewBenefitDialog';
 import { BenefitDetailsDialog } from '@/components/benefits/BenefitDetailsDialog';
 import { PaginationControls } from '@/components/ui/pagination-controls';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -22,15 +23,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Search, Filter, Download, Eye, MoreHorizontal } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Search, Filter, Download, Eye, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
 interface BenefitRequest {
   id: string;
@@ -38,8 +34,10 @@ interface BenefitRequest {
   benefit_type: BenefitType;
   status: BenefitStatus;
   created_at: string;
+  user_id: string;
   profiles: {
     full_name: string;
+    phone: string | null;
   } | null;
 }
 
@@ -47,12 +45,17 @@ export default function Solicitacoes() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [nameFilter, setNameFilter] = useState('');
+  const [whatsappFilter, setWhatsappFilter] = useState('');
   const [requests, setRequests] = useState<BenefitRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     fetchRequests();
@@ -71,17 +74,17 @@ export default function Solicitacoes() {
       return;
     }
 
-    // Buscar profiles para obter nomes
+    // Buscar profiles para obter nomes e telefones
     const { data: profilesData } = await supabase
       .from('profiles')
-      .select('user_id, full_name');
+      .select('user_id, full_name, phone');
 
     // Combinar dados
     const requestsWithProfiles = requestsData.map((request) => {
       const profile = profilesData?.find((p) => p.user_id === request.user_id);
       return {
         ...request,
-        profiles: profile ? { full_name: profile.full_name } : null,
+        profiles: profile ? { full_name: profile.full_name, phone: profile.phone } : null,
       };
     });
 
@@ -90,12 +93,33 @@ export default function Solicitacoes() {
   };
 
   const filteredRequests = requests.filter((request) => {
+    // Filtro de busca geral (protocolo)
     const matchesSearch = 
-      request.protocol.toLowerCase().includes(search.toLowerCase()) ||
-      request.profiles?.full_name?.toLowerCase().includes(search.toLowerCase());
+      request.protocol.toLowerCase().includes(search.toLowerCase());
+    
+    // Filtro de status
     const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
+    
+    // Filtro de tipo
     const matchesType = typeFilter === 'all' || request.benefit_type === typeFilter;
-    return matchesSearch && matchesStatus && matchesType;
+    
+    // Filtro de nome do colaborador
+    const matchesName = !nameFilter || 
+      request.profiles?.full_name?.toLowerCase().includes(nameFilter.toLowerCase());
+    
+    // Filtro de WhatsApp
+    const matchesWhatsapp = !whatsappFilter || 
+      request.profiles?.phone?.includes(whatsappFilter);
+    
+    // Filtro de data inicial
+    const requestDate = new Date(request.created_at);
+    const matchesStartDate = !startDate || requestDate >= new Date(startDate);
+    
+    // Filtro de data final
+    const matchesEndDate = !endDate || requestDate <= new Date(endDate + 'T23:59:59');
+    
+    return matchesSearch && matchesStatus && matchesType && matchesName && 
+           matchesWhatsapp && matchesStartDate && matchesEndDate;
   });
 
   const paginatedRequests = filteredRequests.slice(
@@ -113,7 +137,7 @@ export default function Solicitacoes() {
     setCurrentPage(1);
   };
 
-  const handleViewDetails = async (requestId: string) => {
+  const handleViewDetails = async (requestId: string, index: number) => {
     // Buscar a solicitação
     const { data: requestData, error: requestError } = await supabase
       .from('benefit_requests')
@@ -126,12 +150,41 @@ export default function Solicitacoes() {
       return;
     }
 
+    // Se o status for "aberta", atualizar para "em_analise"
+    if (requestData.status === 'aberta') {
+      const { data: userData } = await supabase.auth.getUser();
+      
+      const { error: updateError } = await supabase
+        .from('benefit_requests')
+        .update({
+          status: 'em_analise',
+          reviewed_by: userData?.user?.id,
+          reviewed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', requestId);
+
+      if (updateError) {
+        console.error('Error updating status:', updateError);
+        toast.error('Erro ao atualizar status');
+      } else {
+        // Atualizar o status local
+        requestData.status = 'em_analise';
+        // Atualizar a lista
+        setRequests(prev => prev.map(r => 
+          r.id === requestId ? { ...r, status: 'em_analise' } : r
+        ));
+        toast.info('Status alterado para "Em Andamento"');
+      }
+    }
+
     // Buscar o perfil do usuário
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select(`
         full_name,
         cpf,
+        phone,
         unit_id,
         units (
           name
@@ -151,7 +204,28 @@ export default function Solicitacoes() {
     };
 
     setSelectedRequest(combinedData);
+    setCurrentIndex(index);
     setDetailsOpen(true);
+  };
+
+  const handleNavigate = async (direction: 'prev' | 'next') => {
+    const newIndex = direction === 'prev' ? currentIndex - 1 : currentIndex + 1;
+    
+    if (newIndex >= 0 && newIndex < filteredRequests.length) {
+      const request = filteredRequests[newIndex];
+      await handleViewDetails(request.id, newIndex);
+    }
+  };
+
+  const clearFilters = () => {
+    setSearch('');
+    setStatusFilter('all');
+    setTypeFilter('all');
+    setStartDate('');
+    setEndDate('');
+    setNameFilter('');
+    setWhatsappFilter('');
+    setCurrentPage(1);
   };
 
   return (
@@ -175,43 +249,93 @@ export default function Solicitacoes() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-4 rounded-xl border border-border bg-card p-4">
-          <div className="relative flex-1 min-w-[240px]">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por protocolo ou colaborador..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
+        <div className="rounded-xl border border-border bg-card p-4 space-y-4">
+          {/* Primeira linha de filtros */}
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por protocolo..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px]">
+                <Filter className="mr-2 h-4 w-4" />
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Status</SelectItem>
+                {(Object.keys(statusLabels) as BenefitStatus[]).map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {statusLabels[status]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Tipo de Benefício" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Tipos</SelectItem>
+                {(Object.keys(benefitTypeLabels) as BenefitType[]).map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {benefitTypeLabels[type]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
-              <Filter className="mr-2 h-4 w-4" />
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os Status</SelectItem>
-              {(Object.keys(statusLabels) as BenefitStatus[]).map((status) => (
-                <SelectItem key={status} value={status}>
-                  {statusLabels[status]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Tipo de Benefício" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os Tipos</SelectItem>
-              {(Object.keys(benefitTypeLabels) as BenefitType[]).map((type) => (
-                <SelectItem key={type} value={type}>
-                  {benefitTypeLabels[type]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+
+          {/* Segunda linha de filtros */}
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Data Inicial</Label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="pl-9 w-[160px]"
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Data Final</Label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="pl-9 w-[160px]"
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5 flex-1 min-w-[180px]">
+              <Label className="text-xs text-muted-foreground">Nome do Colaborador</Label>
+              <Input
+                placeholder="Filtrar por nome..."
+                value={nameFilter}
+                onChange={(e) => setNameFilter(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5 min-w-[160px]">
+              <Label className="text-xs text-muted-foreground">WhatsApp</Label>
+              <Input
+                placeholder="(00) 00000-0000"
+                value={whatsappFilter}
+                onChange={(e) => setWhatsappFilter(e.target.value)}
+              />
+            </div>
+            <Button variant="ghost" size="sm" onClick={clearFilters}>
+              Limpar filtros
+            </Button>
+          </div>
         </div>
 
         {/* Table */}
@@ -221,6 +345,7 @@ export default function Solicitacoes() {
               <TableRow className="bg-muted/50">
                 <TableHead className="font-semibold">Protocolo</TableHead>
                 <TableHead className="font-semibold">Colaborador</TableHead>
+                <TableHead className="font-semibold">WhatsApp</TableHead>
                 <TableHead className="font-semibold">Tipo</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
                 <TableHead className="font-semibold">Data</TableHead>
@@ -233,6 +358,7 @@ export default function Solicitacoes() {
                   <TableRow key={i}>
                     <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-28" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-24" /></TableCell>
@@ -241,49 +367,48 @@ export default function Solicitacoes() {
                 ))
               ) : filteredRequests.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     Nenhuma solicitação encontrada
                   </TableCell>
                 </TableRow>
               ) : (
-                paginatedRequests.map((request) => (
-                  <TableRow key={request.id} className="hover:bg-muted/30 transition-colors">
-                    <TableCell className="font-mono text-sm">{request.protocol}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
-                          {request.profiles?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '??'}
+                paginatedRequests.map((request, idx) => {
+                  const globalIndex = (currentPage - 1) * itemsPerPage + idx;
+                  return (
+                    <TableRow key={request.id} className="hover:bg-muted/30 transition-colors">
+                      <TableCell className="font-mono text-sm">{request.protocol}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                            {request.profiles?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '??'}
+                          </div>
+                          <span className="font-medium">{request.profiles?.full_name || 'Usuário'}</span>
                         </div>
-                        <span className="font-medium">{request.profiles?.full_name || 'Usuário'}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{benefitTypeLabels[request.benefit_type]}</TableCell>
-                    <TableCell>
-                      <StatusBadge status={request.status} />
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(request.created_at).toLocaleDateString('pt-BR')}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem 
-                            className="gap-2"
-                            onClick={() => handleViewDetails(request.id)}
-                          >
-                            <Eye className="h-4 w-4" />
-                            Ver Detalhes
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {request.profiles?.phone || '-'}
+                      </TableCell>
+                      <TableCell>{benefitTypeLabels[request.benefit_type]}</TableCell>
+                      <TableCell>
+                        <StatusBadge status={request.status} />
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(request.created_at).toLocaleDateString('pt-BR')}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
+                          onClick={() => handleViewDetails(request.id, globalIndex)}
+                          title="Ver detalhes"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
@@ -308,6 +433,9 @@ export default function Solicitacoes() {
           onOpenChange={setDetailsOpen}
           request={selectedRequest}
           onSuccess={fetchRequests}
+          currentIndex={currentIndex}
+          totalItems={filteredRequests.length}
+          onNavigate={handleNavigate}
         />
       )}
     </MainLayout>
