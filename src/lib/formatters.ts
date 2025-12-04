@@ -2,8 +2,11 @@
  * Formata número de telefone com máscara brasileira
  */
 export function formatPhone(value: string): string {
+  if (!value) return '';
+  
   const numbers = value.replace(/\D/g, '');
   
+  if (numbers.length === 0) return '';
   if (numbers.length <= 2) {
     return `(${numbers}`;
   }

@@ -96,7 +96,12 @@ export default function Solicitacoes() {
     setLoading(false);
   };
 
-  const handleWhatsappChange = (value: string) => {
+  const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (!value) {
+      setWhatsappFilter('');
+      return;
+    }
     setWhatsappFilter(formatPhone(value));
   };
 
@@ -350,7 +355,7 @@ export default function Solicitacoes() {
               <Input
                 placeholder="(00) 00000-0000"
                 value={whatsappFilter}
-                onChange={(e) => handleWhatsappChange(e.target.value)}
+                onChange={handleWhatsappChange}
                 className="h-9"
                 maxLength={15}
               />

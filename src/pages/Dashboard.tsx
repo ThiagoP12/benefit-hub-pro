@@ -8,7 +8,7 @@ import { BenefitTypeChart } from '@/components/dashboard/BenefitTypeChart';
 import { BenefitCategoryCards } from '@/components/dashboard/BenefitCategoryCards';
 import { RecentRequests } from '@/components/dashboard/RecentRequests';
 import { DashboardFiltersComponent, DashboardFilters } from '@/components/dashboard/DashboardFilters';
-import { FileText, Clock, CheckCircle, CheckSquare, FolderOpen, CalendarDays } from 'lucide-react';
+import { FileText, Clock, CheckCircle, CheckSquare, FolderOpen, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { BenefitType } from '@/types/benefits';
 import { benefitTypes } from '@/data/mockData';
@@ -171,7 +171,7 @@ export default function Dashboard() {
           <StatCard
             title="Total Hoje"
             value={stats.today}
-            icon={CalendarDays}
+            icon={TrendingUp}
           />
           <StatCard
             title="Em Aberto"
