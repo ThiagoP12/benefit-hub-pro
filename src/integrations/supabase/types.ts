@@ -245,6 +245,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_my_unit_id: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -252,6 +253,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin_or_gestor: { Args: never; Returns: boolean }
+      is_same_unit: { Args: { _user_id: string }; Returns: boolean }
       promote_user_to_admin: {
         Args: { user_email: string }
         Returns: undefined
