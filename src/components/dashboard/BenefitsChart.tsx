@@ -34,6 +34,8 @@ export function BenefitsChart({ data }: BenefitsChartProps) {
             <YAxis 
               tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
               axisLine={{ stroke: 'hsl(var(--border))' }}
+              allowDecimals={false}
+              tickFormatter={(value) => Math.floor(value).toString()}
             />
             <Tooltip
               contentStyle={{

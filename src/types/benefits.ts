@@ -69,11 +69,12 @@ export const statusLabels: Record<BenefitStatus, string> = {
   concluida: 'Concluído',
 };
 
-// Status labels without duplicates for filters (grouping recusada into concluida display)
-export const statusFilterLabels: Record<Exclude<BenefitStatus, 'recusada'>, string> = {
+// Status labels for filters
+export const statusFilterLabels: Record<BenefitStatus, string> = {
   aberta: 'Aberto',
   em_analise: 'Em Análise',
   aprovada: 'Aprovado',
+  recusada: 'Reprovado',
   concluida: 'Concluído',
 };
 
