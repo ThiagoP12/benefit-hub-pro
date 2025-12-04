@@ -13,9 +13,8 @@ interface RecentRequest {
   benefit_type: BenefitType;
   status: BenefitStatus;
   created_at: string;
-  profiles: {
-    full_name: string;
-  } | null;
+  user_id: string;
+  full_name?: string;
 }
 
 export function RecentRequests() {
@@ -24,16 +23,44 @@ export function RecentRequests() {
 
   useEffect(() => {
     const fetchRecentRequests = async () => {
-      const { data, error } = await supabase
-        .from('benefit_requests')
-        .select('id, protocol, benefit_type, status, created_at, profiles(full_name)')
-        .order('created_at', { ascending: false })
-        .limit(5);
+      try {
+        // Fetch benefit requests
+        const { data: requestsData, error: requestsError } = await supabase
+          .from('benefit_requests')
+          .select('id, protocol, benefit_type, status, created_at, user_id')
+          .order('created_at', { ascending: false })
+          .limit(5);
 
-      if (error) {
-        console.error('Error fetching recent requests:', error);
-      } else {
-        setRequests(data as unknown as RecentRequest[]);
+        if (requestsError) {
+          console.error('Error fetching recent requests:', requestsError);
+          setLoading(false);
+          return;
+        }
+
+        if (!requestsData || requestsData.length === 0) {
+          setRequests([]);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch profiles separately
+        const userIds = [...new Set(requestsData.map(r => r.user_id))];
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .in('user_id', userIds);
+
+        const profilesMap = new Map(profilesData?.map(p => [p.user_id, p.full_name]) || []);
+
+        // Merge data
+        const mergedData = requestsData.map(req => ({
+          ...req,
+          full_name: profilesMap.get(req.user_id) || 'Usuário'
+        }));
+
+        setRequests(mergedData);
+      } catch (err) {
+        console.error('Error in fetchRecentRequests:', err);
       }
       setLoading(false);
     };
@@ -72,7 +99,7 @@ export function RecentRequests() {
           <h3 className="text-lg font-semibold text-foreground">Solicitações Recentes</h3>
         </div>
         <div className="p-8 text-center text-muted-foreground">
-          Nenhuma solicitação encontrada
+          Nenhuma solicitação recente encontrada
         </div>
       </div>
     );
@@ -95,10 +122,10 @@ export function RecentRequests() {
           <div key={request.id} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
             <div className="flex items-center gap-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-semibold">
-                {request.profiles?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '??'}
+                {request.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '??'}
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">{request.profiles?.full_name || 'Usuário'}</p>
+                <p className="text-sm font-medium text-foreground">{request.full_name}</p>
                 <p className="text-xs text-muted-foreground">
                   {request.protocol} • {benefitTypeLabels[request.benefit_type]}
                 </p>

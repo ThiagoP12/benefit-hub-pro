@@ -51,3 +51,26 @@ export function getRelativeTime(date: Date | string): string {
   if (diffDays < 30) return `Há ${Math.floor(diffDays / 7)} sem`;
   return `Há ${Math.floor(diffDays / 30)} mês`;
 }
+
+/**
+ * Calcula SLA - tempo em aberto formatado (ex: "3h 42min")
+ */
+export function getSLATime(date: Date | string): string {
+  const now = new Date();
+  const targetDate = typeof date === 'string' ? new Date(date) : date;
+  const diffMs = now.getTime() - targetDate.getTime();
+  const diffMins = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffMins < 60) return `${diffMins}min`;
+  if (diffHours < 24) {
+    const mins = diffMins % 60;
+    return `${diffHours}h ${mins}min`;
+  }
+  if (diffDays < 7) {
+    const hours = diffHours % 24;
+    return `${diffDays}d ${hours}h`;
+  }
+  return `${diffDays}d`;
+}

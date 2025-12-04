@@ -3,11 +3,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, X } from 'lucide-react';
+import { CalendarIcon, Eraser } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
-import { benefitTypeLabels, statusLabels, BenefitType, BenefitStatus } from '@/types/benefits';
+import { benefitTypeFilterLabels, statusFilterLabels, BenefitType, BenefitStatus } from '@/types/benefits';
 import { cn } from '@/lib/utils';
 
 export interface DashboardFilters {
@@ -73,7 +73,7 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
           </SelectContent>
         </Select>
 
-        {/* Benefit Type Filter */}
+        {/* Benefit Type Filter - without "outros" */}
         <Select
           value={filters.benefitType || 'all'}
           onValueChange={(value) => onFiltersChange({ ...filters, benefitType: value === 'all' ? null : (value as BenefitType) })}
@@ -83,15 +83,15 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos os tipos</SelectItem>
-            {(Object.keys(benefitTypeLabels) as BenefitType[]).map((type) => (
+            {(Object.keys(benefitTypeFilterLabels) as Array<keyof typeof benefitTypeFilterLabels>).map((type) => (
               <SelectItem key={type} value={type}>
-                {benefitTypeLabels[type]}
+                {benefitTypeFilterLabels[type]}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        {/* Status Filter */}
+        {/* Status Filter - without duplicate "encerrado" */}
         <Select
           value={filters.status || 'all'}
           onValueChange={(value) => onFiltersChange({ ...filters, status: value === 'all' ? null : (value as BenefitStatus) })}
@@ -101,9 +101,9 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas as situações</SelectItem>
-            {(Object.keys(statusLabels) as BenefitStatus[]).map((status) => (
+            {(Object.keys(statusFilterLabels) as Array<keyof typeof statusFilterLabels>).map((status) => (
               <SelectItem key={status} value={status}>
-                {statusLabels[status]}
+                {statusFilterLabels[status]}
               </SelectItem>
             ))}
           </SelectContent>
@@ -164,12 +164,16 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
           </PopoverContent>
         </Popover>
 
-        {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={clearFilters} className="text-muted-foreground">
-            <X className="mr-1 h-4 w-4" />
-            Limpar
-          </Button>
-        )}
+        {/* Clear Filters Button */}
+        <Button 
+          variant="outline" 
+          onClick={clearFilters} 
+          disabled={!hasActiveFilters}
+          className="bg-muted/50 border-border hover:bg-muted text-muted-foreground hover:text-foreground"
+        >
+          <Eraser className="mr-2 h-4 w-4" />
+          Limpar filtros
+        </Button>
       </div>
     </div>
   );

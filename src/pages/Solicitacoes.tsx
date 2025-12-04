@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { benefitTypeLabels, statusLabels, BenefitStatus, BenefitType } from '@/types/benefits';
+import { benefitTypeLabels, benefitTypeFilterLabels, statusLabels, statusFilterLabels, BenefitStatus, BenefitType } from '@/types/benefits';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -24,11 +24,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Search, Filter, Download, Eye, Calendar, ArrowUpDown, ExternalLink } from 'lucide-react';
+import { Search, Filter, Download, Eye, Calendar, ArrowUpDown, ExternalLink, Eraser, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { formatPhone, unformatPhone, getWhatsAppLink, getRelativeTime } from '@/lib/formatters';
+import { formatPhone, unformatPhone, getWhatsAppLink, getRelativeTime, getSLATime } from '@/lib/formatters';
 
 interface BenefitRequest {
   id: string;
@@ -303,9 +303,9 @@ export default function Solicitacoes() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  {(Object.keys(statusLabels) as BenefitStatus[]).map((status) => (
+                  {(Object.keys(statusFilterLabels) as Array<keyof typeof statusFilterLabels>).map((status) => (
                     <SelectItem key={status} value={status}>
-                      {statusLabels[status]}
+                      {statusFilterLabels[status]}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -320,9 +320,9 @@ export default function Solicitacoes() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  {(Object.keys(benefitTypeLabels) as BenefitType[]).map((type) => (
+                  {(Object.keys(benefitTypeFilterLabels) as Array<keyof typeof benefitTypeFilterLabels>).map((type) => (
                     <SelectItem key={type} value={type}>
-                      {benefitTypeLabels[type]}
+                      {benefitTypeFilterLabels[type]}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -357,7 +357,12 @@ export default function Solicitacoes() {
             </div>
 
             <div className="space-y-1.5 flex flex-col justify-end">
-              <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9">
+              <Button 
+                variant="outline" 
+                onClick={clearFilters} 
+                className="h-9 bg-muted/50 border-border hover:bg-muted text-muted-foreground hover:text-foreground"
+              >
+                <Eraser className="mr-2 h-4 w-4" />
                 Limpar filtros
               </Button>
             </div>
@@ -374,6 +379,7 @@ export default function Solicitacoes() {
                 <TableHead className="font-semibold">WhatsApp</TableHead>
                 <SortableHeader field="benefit_type">Tipo</SortableHeader>
                 <SortableHeader field="status">Status</SortableHeader>
+                <TableHead className="font-semibold">SLA</TableHead>
                 <SortableHeader field="created_at">Data</SortableHeader>
                 <TableHead className="font-semibold text-right">Ações</TableHead>
               </TableRow>
@@ -387,13 +393,14 @@ export default function Solicitacoes() {
                     <TableCell><Skeleton className="h-4 w-28" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
                   </TableRow>
                 ))
               ) : filteredRequests.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     Nenhuma solicitação encontrada
                   </TableCell>
                 </TableRow>
@@ -431,10 +438,13 @@ export default function Solicitacoes() {
                         <StatusBadge status={request.status} />
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-col">
-                          <span className="text-sm">{new Date(request.created_at).toLocaleDateString('pt-BR')}</span>
-                          <span className="text-xs text-muted-foreground">{getRelativeTime(request.created_at)}</span>
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          {getSLATime(request.created_at)}
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">{new Date(request.created_at).toLocaleDateString('pt-BR')}</span>
                       </TableCell>
                       <TableCell className="text-right">
                         <Button

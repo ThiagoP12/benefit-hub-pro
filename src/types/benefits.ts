@@ -63,10 +63,28 @@ export const benefitTypeLabels: Record<BenefitType, string> = {
 
 export const statusLabels: Record<BenefitStatus, string> = {
   aberta: 'Aberto',
-  em_analise: 'Em Andamento',
+  em_analise: 'Em Análise',
   aprovada: 'Aprovado',
-  recusada: 'Encerrado',
-  concluida: 'Encerrado',
+  recusada: 'Recusado',
+  concluida: 'Concluído',
+};
+
+// Status labels without duplicates for filters (grouping recusada into concluida display)
+export const statusFilterLabels: Record<Exclude<BenefitStatus, 'recusada'>, string> = {
+  aberta: 'Aberto',
+  em_analise: 'Em Análise',
+  aprovada: 'Aprovado',
+  concluida: 'Concluído',
+};
+
+// Benefit types without "outros" for filters
+export const benefitTypeFilterLabels: Record<Exclude<BenefitType, 'outros'>, string> = {
+  autoescola: '🚗 Autoescola',
+  farmacia: '💊 Farmácia',
+  oficina: '🔧 Oficina',
+  vale_gas: '⛽ Vale Gás',
+  papelaria: '📝 Papelaria',
+  otica: '👓 Ótica',
 };
 
 export const roleLabels: Record<UserRole, string> = {
