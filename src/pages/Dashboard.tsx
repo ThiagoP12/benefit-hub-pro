@@ -8,13 +8,14 @@ import { BenefitTypeChart } from '@/components/dashboard/BenefitTypeChart';
 import { BenefitCategoryCards } from '@/components/dashboard/BenefitCategoryCards';
 import { RecentRequests } from '@/components/dashboard/RecentRequests';
 import { DashboardFiltersComponent, DashboardFilters } from '@/components/dashboard/DashboardFilters';
-import { FileText, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { FileText, Clock, CheckCircle, CheckSquare, FolderOpen, CalendarDays } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { BenefitType } from '@/types/benefits';
 import { benefitTypes } from '@/data/mockData';
 
 interface DashboardStats {
   total: number;
+  today: number;
   abertos: number;
   emAnalise: number;
   aprovados: number;
@@ -22,7 +23,7 @@ interface DashboardStats {
 }
 
 export default function Dashboard() {
-  const [stats, setStats] = useState<DashboardStats>({ total: 0, abertos: 0, emAnalise: 0, aprovados: 0, concluidos: 0 });
+  const [stats, setStats] = useState<DashboardStats>({ total: 0, today: 0, abertos: 0, emAnalise: 0, aprovados: 0, concluidos: 0 });
   const [benefitTypeData, setBenefitTypeData] = useState<{ type: BenefitType; count: number }[]>([]);
   const [filters, setFilters] = useState<DashboardFilters>({
     unitId: null,
@@ -41,7 +42,7 @@ export default function Dashboard() {
       // First get benefit requests without the join that's causing issues
       let query = supabase
         .from('benefit_requests')
-        .select('status, benefit_type, user_id');
+        .select('status, benefit_type, user_id, created_at');
 
       if (filters.benefitType) {
         query = query.eq('benefit_type', filters.benefitType);
@@ -79,12 +80,18 @@ export default function Dashboard() {
       }
 
       const total = filteredData.length;
+      
+      // Calculate today's requests
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const today = filteredData.filter(r => new Date(r.created_at) >= todayStart).length;
+      
       const abertos = filteredData.filter(r => r.status === 'aberta').length;
       const emAnalise = filteredData.filter(r => r.status === 'em_analise').length;
       const aprovados = filteredData.filter(r => r.status === 'aprovada').length;
       const concluidos = filteredData.filter(r => r.status === 'concluida').length;
 
-      setStats({ total, abertos, emAnalise, aprovados, concluidos });
+      setStats({ total, today, abertos, emAnalise, aprovados, concluidos });
 
       // Calculate benefit type counts
       const typeData = benefitTypes.map(type => ({
@@ -139,17 +146,22 @@ export default function Dashboard() {
         {/* Filters */}
         <DashboardFiltersComponent filters={filters} onFiltersChange={setFilters} />
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {/* Stats Grid - 6 KPI Cards */}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           <StatCard
             title="Total de Solicitações"
             value={stats.total}
             icon={FileText}
           />
           <StatCard
+            title="Total Hoje"
+            value={stats.today}
+            icon={CalendarDays}
+          />
+          <StatCard
             title="Em Aberto"
             value={stats.abertos}
-            icon={AlertCircle}
+            icon={FolderOpen}
             variant="info"
           />
           <StatCard
@@ -167,8 +179,7 @@ export default function Dashboard() {
           <StatCard
             title="Concluídas"
             value={stats.concluidos}
-            icon={XCircle}
-            variant="default"
+            icon={CheckSquare}
           />
         </div>
 
