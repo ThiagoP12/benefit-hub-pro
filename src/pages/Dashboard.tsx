@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { BenefitsChart } from '@/components/dashboard/BenefitsChart';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { BenefitTypeChart } from '@/components/dashboard/BenefitTypeChart';
 import { BenefitCategoryCards } from '@/components/dashboard/BenefitCategoryCards';
@@ -13,6 +13,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { BenefitType } from '@/types/benefits';
 import { benefitTypes } from '@/data/mockData';
 
+// Benefit types without "outros"
+const filteredBenefitTypes = benefitTypes.filter(t => t !== 'outros') as BenefitType[];
+
 interface DashboardStats {
   total: number;
   today: number;
@@ -22,9 +25,17 @@ interface DashboardStats {
   concluidos: number;
 }
 
+interface RequestData {
+  status: string;
+  benefit_type: string;
+  user_id: string;
+  created_at: string;
+}
+
 export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats>({ total: 0, today: 0, abertos: 0, emAnalise: 0, aprovados: 0, concluidos: 0 });
   const [benefitTypeData, setBenefitTypeData] = useState<{ type: BenefitType; count: number }[]>([]);
+  const [allRequests, setAllRequests] = useState<RequestData[]>([]);
   const [filters, setFilters] = useState<DashboardFilters>({
     unitId: null,
     benefitType: null,
@@ -79,6 +90,8 @@ export default function Dashboard() {
         filteredData = filteredData.filter(r => validUserIds.has(r.user_id));
       }
 
+      setAllRequests(filteredData);
+
       const total = filteredData.length;
       
       // Calculate today's requests
@@ -89,12 +102,12 @@ export default function Dashboard() {
       const abertos = filteredData.filter(r => r.status === 'aberta').length;
       const emAnalise = filteredData.filter(r => r.status === 'em_analise').length;
       const aprovados = filteredData.filter(r => r.status === 'aprovada').length;
-      const concluidos = filteredData.filter(r => r.status === 'concluida').length;
+      const concluidos = filteredData.filter(r => r.status === 'concluida' || r.status === 'recusada').length;
 
       setStats({ total, today, abertos, emAnalise, aprovados, concluidos });
 
-      // Calculate benefit type counts
-      const typeData = benefitTypes.map(type => ({
+      // Calculate benefit type counts (without "outros")
+      const typeData = filteredBenefitTypes.map(type => ({
         type,
         count: filteredData.filter(r => r.benefit_type === type).length,
       }));
@@ -105,17 +118,19 @@ export default function Dashboard() {
   };
 
   const monthlyData = useMemo(() => {
-    if (!filters.startDate || !filters.endDate) return [];
+    // Use last 6 months as default if no date filters
+    const end = filters.endDate || new Date();
+    const start = filters.startDate || subMonths(end, 5);
     
     const months: { month: string; solicitacoes: number; aprovadas: number }[] = [];
-    const currentDate = new Date(filters.startDate);
-    const end = new Date(filters.endDate);
+    const currentDate = startOfMonth(start);
+    const endMonth = startOfMonth(end);
     
-    while (currentDate <= end) {
+    while (currentDate <= endMonth) {
       const monthStart = startOfMonth(currentDate);
       const monthEnd = endOfMonth(currentDate);
       
-      const monthRequests = (benefitTypeData as any[]).filter((req: any) => {
+      const monthRequests = allRequests.filter((req) => {
         const reqDate = new Date(req.created_at);
         return reqDate >= monthStart && reqDate <= monthEnd;
       });
@@ -123,14 +138,14 @@ export default function Dashboard() {
       months.push({
         month: format(currentDate, 'MMM', { locale: ptBR }),
         solicitacoes: monthRequests.length,
-        aprovadas: monthRequests.filter((r: any) => r.status === 'aprovada').length,
+        aprovadas: monthRequests.filter((r) => r.status === 'aprovada').length,
       });
       
       currentDate.setMonth(currentDate.getMonth() + 1);
     }
     
     return months;
-  }, [benefitTypeData, filters.startDate, filters.endDate]);
+  }, [allRequests, filters.startDate, filters.endDate]);
 
   return (
     <MainLayout>
