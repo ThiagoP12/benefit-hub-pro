@@ -9,6 +9,7 @@ import { BenefitDetailsSheet } from '@/components/benefits/BenefitDetailsSheet';
 import { StatsCards } from '@/components/benefits/StatsCards';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 import { Label } from '@/components/ui/label';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   Select,
   SelectContent,
@@ -63,6 +64,8 @@ export default function Solicitacoes() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sortField, setSortField] = useState<SortField>('created_at');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [pendingViewRequest, setPendingViewRequest] = useState<{ id: string; index: number } | null>(null);
 
   useEffect(() => {
     fetchRequests();
@@ -205,29 +208,59 @@ export default function Solicitacoes() {
       return;
     }
 
+    // Se status é 'aberta', mostrar confirmação antes de mudar para 'em_analise'
     if (requestData.status === 'aberta') {
-      const { data: userData } = await supabase.auth.getUser();
-
-      const { error: updateError } = await supabase
-        .from('benefit_requests')
-        .update({
-          status: 'em_analise',
-          reviewed_by: userData?.user?.id,
-          reviewed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', requestId);
-
-      if (updateError) {
-        console.error('Error updating status:', updateError);
-        toast.error('Erro ao atualizar status');
-      } else {
-        requestData.status = 'em_analise';
-        setRequests((prev) => prev.map((r) => (r.id === requestId ? { ...r, status: 'em_analise' } : r)));
-        toast.info('Status alterado para "Em Andamento"');
-      }
+      setPendingViewRequest({ id: requestId, index });
+      setConfirmDialogOpen(true);
+      return;
     }
 
+    await openRequestDetails(requestData, index);
+  };
+
+  const handleConfirmStatusChange = async () => {
+    if (!pendingViewRequest) return;
+
+    const { data: requestData, error: requestError } = await supabase
+      .from('benefit_requests')
+      .select('*')
+      .eq('id', pendingViewRequest.id)
+      .single();
+
+    if (requestError) {
+      console.error('Error fetching request details:', requestError);
+      setConfirmDialogOpen(false);
+      setPendingViewRequest(null);
+      return;
+    }
+
+    const { data: userData } = await supabase.auth.getUser();
+
+    const { error: updateError } = await supabase
+      .from('benefit_requests')
+      .update({
+        status: 'em_analise',
+        reviewed_by: userData?.user?.id,
+        reviewed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', pendingViewRequest.id);
+
+    if (updateError) {
+      console.error('Error updating status:', updateError);
+      toast.error('Erro ao atualizar status');
+    } else {
+      requestData.status = 'em_analise';
+      setRequests((prev) => prev.map((r) => (r.id === pendingViewRequest.id ? { ...r, status: 'em_analise' } : r)));
+      toast.info('Status alterado para "Em Análise"');
+    }
+
+    await openRequestDetails(requestData, pendingViewRequest.index);
+    setConfirmDialogOpen(false);
+    setPendingViewRequest(null);
+  };
+
+  const openRequestDetails = async (requestData: any, index: number) => {
     const { data: profileData } = await supabase
       .from('profiles')
       .select(`full_name, cpf, phone, unit_id, units (name)`)
@@ -508,6 +541,20 @@ export default function Solicitacoes() {
           onNavigate={handleNavigate}
         />
       )}
+
+      {/* Dialog de Confirmação */}
+      <ConfirmDialog
+        open={confirmDialogOpen}
+        onOpenChange={(open) => {
+          setConfirmDialogOpen(open);
+          if (!open) setPendingViewRequest(null);
+        }}
+        title="Iniciar análise?"
+        description="Ao visualizar esta solicitação, o status será alterado para 'Em Análise'. O colaborador será notificado sobre esta mudança. Deseja continuar?"
+        confirmLabel="Sim, iniciar análise"
+        cancelLabel="Cancelar"
+        onConfirm={handleConfirmStatusChange}
+      />
     </MainLayout>
   );
 }
