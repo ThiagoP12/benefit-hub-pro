@@ -108,26 +108,40 @@ export default function Solicitacoes() {
   const filteredRequests = useMemo(() => {
     let result = requests.filter((request) => {
       // Busca inteligente: protocolo, nome, CPF, telefone
-      const searchLower = search.toLowerCase();
-      const searchNumbers = search.replace(/\D/g, '');
-      const matchesSearch =
-        !search ||
-        request.protocol.toLowerCase().includes(searchLower) ||
-        request.profiles?.full_name?.toLowerCase().includes(searchLower) ||
-        request.profiles?.cpf?.includes(searchNumbers) ||
-        request.profiles?.phone?.includes(searchNumbers);
+      const searchTerm = search.trim();
+      if (!searchTerm) {
+        // Se não há busca, passa direto para os outros filtros
+      } else {
+        const searchLower = searchTerm.toLowerCase();
+        const searchNumbers = searchTerm.replace(/\D/g, '');
+        
+        // Normaliza os dados do request para comparação
+        const protocolMatch = request.protocol?.toLowerCase().includes(searchLower);
+        const nameMatch = request.profiles?.full_name?.toLowerCase().includes(searchLower);
+        
+        // Para CPF e telefone, compara apenas números
+        const cpfClean = request.profiles?.cpf?.replace(/\D/g, '') || '';
+        const phoneClean = request.profiles?.phone?.replace(/\D/g, '') || '';
+        const cpfMatch = searchNumbers.length > 0 && cpfClean.includes(searchNumbers);
+        const phoneMatch = searchNumbers.length > 0 && phoneClean.includes(searchNumbers);
+        
+        const matchesSearch = protocolMatch || nameMatch || cpfMatch || phoneMatch;
+        
+        if (!matchesSearch) return false;
+      }
 
       const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
       const matchesType = typeFilter === 'all' || request.benefit_type === typeFilter;
 
       const whatsappNumbers = unformatPhone(whatsappFilter);
-      const matchesWhatsapp = !whatsappNumbers || request.profiles?.phone?.includes(whatsappNumbers);
+      const phoneClean = request.profiles?.phone?.replace(/\D/g, '') || '';
+      const matchesWhatsapp = !whatsappNumbers || phoneClean.includes(whatsappNumbers);
 
       const requestDate = new Date(request.created_at);
       const matchesStartDate = !startDate || requestDate >= new Date(startDate);
       const matchesEndDate = !endDate || requestDate <= new Date(endDate + 'T23:59:59');
 
-      return matchesSearch && matchesStatus && matchesType && matchesWhatsapp && matchesStartDate && matchesEndDate;
+      return matchesStatus && matchesType && matchesWhatsapp && matchesStartDate && matchesEndDate;
     });
 
     // Ordenação
