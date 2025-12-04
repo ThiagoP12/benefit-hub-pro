@@ -12,7 +12,7 @@ export default function Auth() {
   const navigate = useNavigate();
   const { isAuthenticated, login } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   useEffect(() => {
@@ -24,22 +24,25 @@ export default function Auth() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email.trim() || !password.trim()) {
+    if (!username.trim() || !password.trim()) {
       toast.error('Preencha todos os campos');
       return;
     }
     
     setLoading(true);
     
-    const { error } = await login(email.trim(), password);
+    // Simular delay de autenticação
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const success = login(username.trim(), password);
     
     setLoading(false);
     
-    if (error) {
-      toast.error(error);
-    } else {
+    if (success) {
       toast.success('Login realizado com sucesso!');
       navigate('/');
+    } else {
+      toast.error('Usuário ou senha incorretos');
     }
   };
 
@@ -60,14 +63,14 @@ export default function Auth() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Usuário</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
+                id="username"
+                type="text"
+                placeholder="Digite seu usuário"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
                 required
               />
             </div>

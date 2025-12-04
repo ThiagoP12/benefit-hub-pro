@@ -27,17 +27,16 @@ const navigation = [
 
 export function Sidebar() {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { username, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
-  const handleSignOut = async () => {
-    await logout();
+  const handleSignOut = () => {
+    logout();
     toast.success('Você saiu da sua conta');
   };
 
-  const userEmail = user?.email || '';
-  const userInitials = userEmail.slice(0, 2).toUpperCase() || 'US';
-  const userName = userEmail.split('@')[0] || 'Usuário';
+  const userInitials = username?.slice(0, 2).toUpperCase() || 'DP';
+  const userName = username === 'dp' ? 'Depart. Pessoal' : username || 'Usuário';
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar border-r border-sidebar-border">
