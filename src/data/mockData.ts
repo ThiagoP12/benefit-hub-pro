@@ -47,7 +47,7 @@ export const getMonthlyData = (): MonthlyData[] => {
 };
 
 // Benefit types list
-export const benefitTypes: BenefitType[] = ['autoescola', 'farmacia', 'oficina', 'vale_gas', 'papelaria', 'otica', 'outros'];
+export const benefitTypes: BenefitType[] = ['autoescola', 'farmacia', 'oficina', 'vale_gas', 'papelaria', 'otica'];
 
 // Status list
 export const statuses: BenefitStatus[] = ['aberta', 'em_analise', 'aprovada', 'recusada', 'concluida'];

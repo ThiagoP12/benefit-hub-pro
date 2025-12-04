@@ -82,12 +82,17 @@ export default {
         },
         benefit: {
           autoescola: "hsl(var(--benefit-autoescola))",
+          "autoescola-icon": "hsl(var(--benefit-autoescola-icon))",
           farmacia: "hsl(var(--benefit-farmacia))",
+          "farmacia-icon": "hsl(var(--benefit-farmacia-icon))",
           oficina: "hsl(var(--benefit-oficina))",
+          "oficina-icon": "hsl(var(--benefit-oficina-icon))",
           "vale-gas": "hsl(var(--benefit-vale-gas))",
+          "vale-gas-icon": "hsl(var(--benefit-vale-gas-icon))",
           papelaria: "hsl(var(--benefit-papelaria))",
+          "papelaria-icon": "hsl(var(--benefit-papelaria-icon))",
           otica: "hsl(var(--benefit-otica))",
-          outros: "hsl(var(--benefit-outros))",
+          "otica-icon": "hsl(var(--benefit-otica-icon))",
         },
       },
       borderRadius: {

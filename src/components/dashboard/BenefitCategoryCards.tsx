@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Car, Pill, Wrench, Fuel, Pencil, Glasses, ClipboardList } from 'lucide-react';
+import { Car, Pill, Wrench, Fuel, Pencil, Glasses } from 'lucide-react';
 import { BenefitType, benefitTypeLabels } from '@/types/benefits';
 import { cn } from '@/lib/utils';
 import { BenefitCategoryPieDialog } from './BenefitCategoryPieDialog';
@@ -8,27 +8,41 @@ interface BenefitCategoryCardsProps {
   data: { type: BenefitType; count: number }[];
 }
 
-const benefitConfig: Record<BenefitType, { icon: React.ElementType; colorClass: string; bgClass: string }> = {
-  autoescola: { icon: Car, colorClass: 'text-benefit-autoescola', bgClass: 'bg-benefit-autoescola/15' },
-  farmacia: { icon: Pill, colorClass: 'text-benefit-farmacia', bgClass: 'bg-benefit-farmacia/15' },
-  oficina: { icon: Wrench, colorClass: 'text-benefit-oficina', bgClass: 'bg-benefit-oficina/15' },
-  vale_gas: { icon: Fuel, colorClass: 'text-benefit-vale-gas', bgClass: 'bg-benefit-vale-gas/15' },
-  papelaria: { icon: Pencil, colorClass: 'text-benefit-papelaria', bgClass: 'bg-benefit-papelaria/15' },
-  otica: { icon: Glasses, colorClass: 'text-benefit-otica', bgClass: 'bg-benefit-otica/15' },
-  outros: { icon: ClipboardList, colorClass: 'text-benefit-outros', bgClass: 'bg-benefit-outros/15' },
+const benefitConfig: Record<Exclude<BenefitType, 'outros'>, { icon: React.ElementType; label: string }> = {
+  autoescola: { icon: Car, label: 'Autoescola' },
+  farmacia: { icon: Pill, label: 'Farmácia' },
+  oficina: { icon: Wrench, label: 'Oficina' },
+  vale_gas: { icon: Fuel, label: 'Vale Gás' },
+  papelaria: { icon: Pencil, label: 'Papelaria' },
+  otica: { icon: Glasses, label: 'Óculos' },
+};
+
+const categoryStyles: Record<Exclude<BenefitType, 'outros'>, { bg: string; text: string }> = {
+  autoescola: { bg: 'bg-benefit-autoescola', text: 'text-benefit-autoescola-icon' },
+  farmacia: { bg: 'bg-benefit-farmacia', text: 'text-benefit-farmacia-icon' },
+  oficina: { bg: 'bg-benefit-oficina', text: 'text-benefit-oficina-icon' },
+  vale_gas: { bg: 'bg-benefit-vale-gas', text: 'text-benefit-vale-gas-icon' },
+  papelaria: { bg: 'bg-benefit-papelaria', text: 'text-benefit-papelaria-icon' },
+  otica: { bg: 'bg-benefit-otica', text: 'text-benefit-otica-icon' },
 };
 
 export function BenefitCategoryCards({ data }: BenefitCategoryCardsProps) {
   const [selectedBenefitType, setSelectedBenefitType] = useState<BenefitType | null>(null);
-  const total = data.reduce((acc, item) => acc + item.count, 0);
+  
+  // Filter out 'outros' type
+  const filteredData = data.filter(item => item.type !== 'outros');
+  const total = filteredData.reduce((acc, item) => acc + item.count, 0);
 
   return (
     <>
       <div className="rounded-xl border border-border bg-card p-6 animate-slide-up" style={{ animationDelay: '50ms' }}>
         <h3 className="text-lg font-semibold text-foreground mb-4">Solicitações por Categoria</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
-          {data.map((item) => {
-            const config = benefitConfig[item.type];
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {filteredData.map((item) => {
+            if (item.type === 'outros') return null;
+            
+            const config = benefitConfig[item.type as Exclude<BenefitType, 'outros'>];
+            const styles = categoryStyles[item.type as Exclude<BenefitType, 'outros'>];
             const Icon = config.icon;
             const percentage = total > 0 ? ((item.count / total) * 100).toFixed(0) : 0;
 
@@ -37,20 +51,19 @@ export function BenefitCategoryCards({ data }: BenefitCategoryCardsProps) {
                 key={item.type}
                 onClick={() => item.count > 0 && setSelectedBenefitType(item.type)}
                 className={cn(
-                  'rounded-lg p-4 transition-all hover:scale-105',
-                  config.bgClass,
-                  'border border-transparent hover:border-border',
-                  item.count > 0 ? 'cursor-pointer' : 'cursor-default opacity-50'
+                  'rounded-lg p-4 transition-all hover:scale-105 border border-transparent hover:border-border',
+                  styles.bg,
+                  item.count > 0 ? 'cursor-pointer' : 'cursor-default opacity-60'
                 )}
               >
-                <div className={cn('flex items-center justify-center mb-2', config.colorClass)}>
+                <div className={cn('flex items-center justify-center mb-2', styles.text)}>
                   <Icon className="h-6 w-6" />
                 </div>
                 <p className="text-2xl font-bold text-foreground text-center">{item.count}</p>
                 <p className="text-xs text-muted-foreground text-center truncate">
-                  {benefitTypeLabels[item.type].replace(/^[^\s]+\s/, '')}
+                  {config.label}
                 </p>
-                <p className={cn('text-xs font-medium text-center mt-1', config.colorClass)}>
+                <p className={cn('text-xs font-medium text-center mt-1', styles.text)}>
                   {percentage}%
                 </p>
               </div>
