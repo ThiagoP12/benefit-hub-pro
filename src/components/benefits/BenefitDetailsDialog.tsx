@@ -162,10 +162,6 @@ export function BenefitDetailsDialog({
         return;
       }
 
-      // Obter o usuário atual
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error("Usuário não autenticado");
-
       // Determinar status final
       const finalStatus: BenefitStatus = 
         status === "aprovada" ? "concluida" : "recusada";
@@ -179,7 +175,6 @@ export function BenefitDetailsDialog({
           pdf_file_name: pdfFile?.name || request.pdf_file_name,
           rejection_reason: status === "recusada" ? rejectionReason : null,
           closing_message: closingMessage,
-          closed_by: userData.user.id,
           closed_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
@@ -192,7 +187,6 @@ export function BenefitDetailsDialog({
         entity_type: "benefit_request",
         entity_id: request.id,
         action: finalStatus === "concluida" ? "approved" : "rejected",
-        user_id: userData.user.id,
         details: {
           protocol: request.protocol,
           status: finalStatus,
