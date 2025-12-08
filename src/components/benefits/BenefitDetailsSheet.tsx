@@ -128,6 +128,36 @@ export function BenefitDetailsSheet({
     }
   };
 
+  const sendWebhook = async (webhookStatus: 'aprovado' | 'reprovado', motivo?: string) => {
+    try {
+      const webhookData = {
+        protocolo: request.protocol,
+        nome_colaborador: request.profiles?.full_name || "N/A",
+        telefone_whatsapp: request.profiles?.phone || "",
+        status: webhookStatus,
+        motivo: motivo || null,
+      };
+
+      console.log("Enviando webhook:", webhookData);
+
+      const response = await fetch("https://n8n.revalle.com.br/webhook-test/aprovacao", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(webhookData),
+      });
+
+      if (!response.ok) {
+        console.error("Erro no webhook:", response.status, response.statusText);
+      } else {
+        console.log("Webhook enviado com sucesso");
+      }
+    } catch (error) {
+      console.error("Erro ao enviar webhook:", error);
+    }
+  };
+
   const handleSend = async () => {
     setLoading(true);
     try {
@@ -182,6 +212,12 @@ export function BenefitDetailsSheet({
           message: closingMessage,
         },
       });
+
+      // Enviar webhook para n8n
+      await sendWebhook(
+        status === "aprovada" ? "aprovado" : "reprovado",
+        status === "recusada" ? rejectionReason : undefined
+      );
 
       toast.success("Solicitação atualizada com sucesso!");
       onOpenChange(false);
