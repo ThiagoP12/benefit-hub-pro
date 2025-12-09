@@ -281,6 +281,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_request_from_bot: {
+        Args: {
+          p_benefit_text: string
+          p_name: string
+          p_phone: string
+          p_protocol: string
+        }
+        Returns: Json
+      }
       get_my_unit_id: { Args: never; Returns: string }
       has_role: {
         Args: {
