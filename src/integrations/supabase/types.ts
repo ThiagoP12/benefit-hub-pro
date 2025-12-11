@@ -284,8 +284,8 @@ export type Database = {
       create_request_from_bot: {
         Args: {
           p_benefit_text: string
+          p_cpf: string
           p_name: string
-          p_phone: string
           p_protocol: string
         }
         Returns: Json
