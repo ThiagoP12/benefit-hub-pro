@@ -64,16 +64,32 @@ export default function Colaboradores() {
   }, []);
 
   const fetchProfiles = async () => {
-    // Buscar profiles com unit_id e departamento
-    const { data: profilesData, error: profilesError } = await supabase
-      .from('profiles')
-      .select('id, user_id, full_name, cpf, birthday, phone, gender, position, unit_id, departamento')
-      .order('full_name');
+    // Buscar profiles com paginação para evitar limite de 1000 do Supabase
+    let allProfiles: any[] = [];
+    let page = 0;
+    const pageSize = 1000;
+    let hasMore = true;
 
-    if (profilesError) {
-      console.error('Error fetching profiles:', profilesError);
-      setLoading(false);
-      return;
+    while (hasMore) {
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, user_id, full_name, cpf, birthday, phone, gender, position, unit_id, departamento')
+        .order('full_name')
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        setLoading(false);
+        return;
+      }
+
+      if (profilesData && profilesData.length > 0) {
+        allProfiles = [...allProfiles, ...profilesData];
+        hasMore = profilesData.length === pageSize;
+        page++;
+      } else {
+        hasMore = false;
+      }
     }
 
     // Buscar units
@@ -81,15 +97,32 @@ export default function Colaboradores() {
       .from('units')
       .select('id, name');
 
-    // Buscar user_roles
-    const { data: rolesData } = await supabase
-      .from('user_roles')
-      .select('user_id, role');
+    // Buscar user_roles com paginação também
+    let allRoles: any[] = [];
+    page = 0;
+    hasMore = true;
+
+    while (hasMore) {
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+
+      if (rolesError) {
+        hasMore = false;
+      } else if (rolesData && rolesData.length > 0) {
+        allRoles = [...allRoles, ...rolesData];
+        hasMore = rolesData.length === pageSize;
+        page++;
+      } else {
+        hasMore = false;
+      }
+    }
 
     // Combinar dados
-    const profilesWithRelations = profilesData.map((profile) => {
+    const profilesWithRelations = allProfiles.map((profile) => {
       const unit = unitsData?.find((u) => u.id === profile.unit_id);
-      const roles = rolesData?.filter((r) => r.user_id === profile.user_id) || [];
+      const roles = allRoles?.filter((r) => r.user_id === profile.user_id) || [];
       
       return {
         ...profile,
