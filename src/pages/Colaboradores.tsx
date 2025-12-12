@@ -224,10 +224,16 @@ export default function Colaboradores() {
                       <span>{profile.units.name}</span>
                     </div>
                   )}
-                  {profile.departamento && (
+                  {profile.position && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Briefcase className="h-4 w-4" />
-                      <span>{DEPARTAMENTOS_LABELS[profile.departamento] || profile.departamento}</span>
+                      <span>{profile.position}</span>
+                    </div>
+                  )}
+                  {profile.departamento && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Building2 className="h-4 w-4 opacity-70" />
+                      <span className="text-xs">{DEPARTAMENTOS_LABELS[profile.departamento] || profile.departamento}</span>
                     </div>
                   )}
                 </div>
