@@ -36,6 +36,12 @@ export interface BenefitRequest {
   approved_value?: number;
   reviewed_by?: string;
   reviewed_at?: string;
+  rejection_reason?: string;
+  pdf_url?: string;
+  pdf_file_name?: string;
+  closing_message?: string;
+  closed_by?: string;
+  closed_at?: string;
   created_at: string;
   updated_at: string;
 }
