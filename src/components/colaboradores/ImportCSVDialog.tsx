@@ -12,7 +12,7 @@ interface Unit {
   name: string;
 }
 
-const DEPARTAMENTOS_VALIDOS = ['101', '201', '301', '401', '501'];
+const DEPARTAMENTOS_VALIDOS = ['101', '102', '201', '202', '301', '302', '401', '402', '501', '502', '601', '602', '701', '702', '801', '802', '803'];
 
 export function ImportCSVDialog({ onSuccess }: { onSuccess?: () => void }) {
   const [open, setOpen] = useState(false);
@@ -219,13 +219,25 @@ Maria Santos,98765432100,15/05/1985,(11) 91234-5678,feminino,Gerente,${exampleUn
 
           <div className="rounded-lg border border-border bg-muted/50 p-4">
             <h4 className="font-medium mb-2">Departamentos disponíveis:</h4>
-            <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-              <li><code className="bg-background px-1 rounded">101</code> – Puxada</li>
-              <li><code className="bg-background px-1 rounded">201</code> – Armazém</li>
-              <li><code className="bg-background px-1 rounded">301</code> – Administrativo</li>
-              <li><code className="bg-background px-1 rounded">401</code> – Vendas</li>
-              <li><code className="bg-background px-1 rounded">501</code> – Entrega</li>
-            </ul>
+            <div className="text-sm text-muted-foreground grid grid-cols-2 gap-1 max-h-48 overflow-y-auto">
+              <div><code className="bg-background px-1 rounded">101</code> – PUXADA</div>
+              <div><code className="bg-background px-1 rounded">102</code> – PUXADA</div>
+              <div><code className="bg-background px-1 rounded">201</code> – ARMAZEM</div>
+              <div><code className="bg-background px-1 rounded">202</code> – ARMAZEM</div>
+              <div><code className="bg-background px-1 rounded">301</code> – ADM</div>
+              <div><code className="bg-background px-1 rounded">302</code> – ADM</div>
+              <div><code className="bg-background px-1 rounded">401</code> – VENDAS</div>
+              <div><code className="bg-background px-1 rounded">402</code> – VENDAS</div>
+              <div><code className="bg-background px-1 rounded">501</code> – ENTREGA</div>
+              <div><code className="bg-background px-1 rounded">502</code> – ENTREGA</div>
+              <div><code className="bg-background px-1 rounded">601</code> – ESTAGIO</div>
+              <div><code className="bg-background px-1 rounded">602</code> – ESTAGIO</div>
+              <div><code className="bg-background px-1 rounded">701</code> – JOVEM APRENDIZ</div>
+              <div><code className="bg-background px-1 rounded">702</code> – JOVEM APRENDIZ</div>
+              <div><code className="bg-background px-1 rounded">801</code> – ADM - CSC</div>
+              <div><code className="bg-background px-1 rounded">802</code> – VENDAS - CSC</div>
+              <div><code className="bg-background px-1 rounded">803</code> – ENTREGA - CSC</div>
+            </div>
           </div>
 
           {units.length > 0 && (

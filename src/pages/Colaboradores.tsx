@@ -14,11 +14,23 @@ import { EditColaboradorDialog } from '@/components/colaboradores/EditColaborado
 import { PaginationControls } from '@/components/ui/pagination-controls';
 
 const DEPARTAMENTOS_LABELS: Record<string, string> = {
-  '101': '101 – Puxada',
-  '201': '201 – Armazém',
-  '301': '301 – Administrativo',
-  '401': '401 – Vendas',
-  '501': '501 – Entrega',
+  '101': '101 – PUXADA',
+  '102': '102 – PUXADA',
+  '201': '201 – ARMAZEM',
+  '202': '202 – ARMAZEM',
+  '301': '301 – ADM',
+  '302': '302 – ADM',
+  '401': '401 – VENDAS',
+  '402': '402 – VENDAS',
+  '501': '501 – ENTREGA',
+  '502': '502 – ENTREGA',
+  '601': '601 – ESTAGIO',
+  '602': '602 – ESTAGIO',
+  '701': '701 – JOVEM APRENDIZ',
+  '702': '702 – JOVEM APRENDIZ',
+  '801': '801 – ADM - CSC',
+  '802': '802 – VENDAS - CSC',
+  '803': '803 – ENTREGA - CSC',
 };
 
 interface Profile {
