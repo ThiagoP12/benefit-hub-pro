@@ -28,21 +28,21 @@ export function DeleteColaboradorDialog({ profileId, userId, name, onSuccess }: 
   const handleDelete = async () => {
     setLoading(true);
     try {
-      // Delete profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', profileId);
-
-      if (profileError) throw profileError;
-
-      // Delete user roles
+      // First delete user roles (must be deleted before profile)
       const { error: rolesError } = await supabase
         .from('user_roles')
         .delete()
         .eq('user_id', userId);
 
       if (rolesError) throw rolesError;
+
+      // Then delete profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', profileId);
+
+      if (profileError) throw profileError;
 
       toast.success('Colaborador excluído com sucesso!');
       onSuccess?.();
