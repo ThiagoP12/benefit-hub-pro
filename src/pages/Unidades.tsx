@@ -48,23 +48,70 @@ export default function Unidades() {
         }));
       }
 
-      // Buscar contagens de colaboradores por unidade
-      const { data: profilesData } = await supabase
-        .from('profiles')
-        .select('unit_id');
+      // Buscar contagens de colaboradores por unidade com paginação
+      let allProfiles: { unit_id: string | null }[] = [];
+      let page = 0;
+      const pageSize = 1000;
+      let hasMore = true;
 
-      // Buscar contagens de solicitações por unidade (através do user_id -> profile -> unit_id)
-      const { data: requestsData } = await supabase
-        .from('benefit_requests')
-        .select('user_id');
+      while (hasMore) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('unit_id')
+          .range(page * pageSize, (page + 1) * pageSize - 1);
 
-      const { data: profilesForRequests } = await supabase
-        .from('profiles')
-        .select('user_id, unit_id');
+        if (profilesData && profilesData.length > 0) {
+          allProfiles = [...allProfiles, ...profilesData];
+          hasMore = profilesData.length === pageSize;
+          page++;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      // Buscar solicitações com paginação
+      let allRequests: { user_id: string }[] = [];
+      page = 0;
+      hasMore = true;
+
+      while (hasMore) {
+        const { data: requestsData } = await supabase
+          .from('benefit_requests')
+          .select('user_id')
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        if (requestsData && requestsData.length > 0) {
+          allRequests = [...allRequests, ...requestsData];
+          hasMore = requestsData.length === pageSize;
+          page++;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      // Buscar profiles para requests com paginação
+      let allProfilesForRequests: { user_id: string; unit_id: string | null }[] = [];
+      page = 0;
+      hasMore = true;
+
+      while (hasMore) {
+        const { data: profilesForRequests } = await supabase
+          .from('profiles')
+          .select('user_id, unit_id')
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        if (profilesForRequests && profilesForRequests.length > 0) {
+          allProfilesForRequests = [...allProfilesForRequests, ...profilesForRequests];
+          hasMore = profilesForRequests.length === pageSize;
+          page++;
+        } else {
+          hasMore = false;
+        }
+      }
 
       // Contar colaboradores por unidade
       const collaboratorsCounts: Record<string, number> = {};
-      profilesData?.forEach(profile => {
+      allProfiles.forEach(profile => {
         if (profile.unit_id) {
           collaboratorsCounts[profile.unit_id] = (collaboratorsCounts[profile.unit_id] || 0) + 1;
         }
@@ -72,8 +119,8 @@ export default function Unidades() {
 
       // Contar solicitações por unidade
       const requestsCounts: Record<string, number> = {};
-      requestsData?.forEach(request => {
-        const profile = profilesForRequests?.find(p => p.user_id === request.user_id);
+      allRequests.forEach(request => {
+        const profile = allProfilesForRequests.find(p => p.user_id === request.user_id);
         if (profile?.unit_id) {
           requestsCounts[profile.unit_id] = (requestsCounts[profile.unit_id] || 0) + 1;
         }
