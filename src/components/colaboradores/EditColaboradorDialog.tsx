@@ -29,11 +29,23 @@ interface Profile {
 }
 
 const DEPARTAMENTOS = [
-  { value: '101', label: '101 – Puxada' },
-  { value: '201', label: '201 – Armazém' },
-  { value: '301', label: '301 – Administrativo' },
-  { value: '401', label: '401 – Vendas' },
-  { value: '501', label: '501 – Entrega' },
+  { value: '101', label: '101 – PUXADA' },
+  { value: '102', label: '102 – PUXADA' },
+  { value: '201', label: '201 – ARMAZEM' },
+  { value: '202', label: '202 – ARMAZEM' },
+  { value: '301', label: '301 – ADM' },
+  { value: '302', label: '302 – ADM' },
+  { value: '401', label: '401 – VENDAS' },
+  { value: '402', label: '402 – VENDAS' },
+  { value: '501', label: '501 – ENTREGA' },
+  { value: '502', label: '502 – ENTREGA' },
+  { value: '601', label: '601 – ESTAGIO' },
+  { value: '602', label: '602 – ESTAGIO' },
+  { value: '701', label: '701 – JOVEM APRENDIZ' },
+  { value: '702', label: '702 – JOVEM APRENDIZ' },
+  { value: '801', label: '801 – ADM - CSC' },
+  { value: '802', label: '802 – VENDAS - CSC' },
+  { value: '803', label: '803 – ENTREGA - CSC' },
 ];
 
 export function EditColaboradorDialog({ 
