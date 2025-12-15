@@ -26,6 +26,8 @@ interface BenefitDetailsDialogProps {
     pdf_file_name: string | null;
     rejection_reason: string | null;
     closing_message: string | null;
+    account_id: number | null;
+    conversation_id: number | null;
     profiles: {
       full_name: string;
       cpf: string | null;
@@ -110,7 +112,7 @@ export function BenefitDetailsDialog({
     }
   };
 
-  const sendWebhook = async (webhookStatus: 'aprovado' | 'reprovado', motivo?: string) => {
+  const sendWebhook = async (webhookStatus: 'aprovado' | 'reprovado', motivo?: string, mensagemRh?: string) => {
     try {
       const webhookData = {
         protocolo: request.protocol,
@@ -118,6 +120,9 @@ export function BenefitDetailsDialog({
         telefone_whatsapp: request.profiles?.phone || "",
         status: webhookStatus,
         motivo: motivo || null,
+        account_id: request.account_id || null,
+        conversation_id: request.conversation_id || null,
+        mensagem_rh: mensagemRh || null,
       };
 
       console.log("Enviando webhook:", webhookData);
@@ -197,7 +202,8 @@ export function BenefitDetailsDialog({
       // Enviar webhook para n8n
       await sendWebhook(
         status === "aprovada" ? "aprovado" : "reprovado",
-        status === "recusada" ? rejectionReason : undefined
+        status === "recusada" ? rejectionReason : undefined,
+        closingMessage
       );
 
       // Enviar mensagem WhatsApp

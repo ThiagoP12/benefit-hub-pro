@@ -16,11 +16,13 @@ export type Database = {
     Tables: {
       benefit_requests: {
         Row: {
+          account_id: number | null
           approved_value: number | null
           benefit_type: Database["public"]["Enums"]["benefit_type"]
           closed_at: string | null
           closed_by: string | null
           closing_message: string | null
+          conversation_id: number | null
           created_at: string
           details: string | null
           id: string
@@ -36,11 +38,13 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_id?: number | null
           approved_value?: number | null
           benefit_type: Database["public"]["Enums"]["benefit_type"]
           closed_at?: string | null
           closed_by?: string | null
           closing_message?: string | null
+          conversation_id?: number | null
           created_at?: string
           details?: string | null
           id?: string
@@ -56,11 +60,13 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_id?: number | null
           approved_value?: number | null
           benefit_type?: Database["public"]["Enums"]["benefit_type"]
           closed_at?: string | null
           closed_by?: string | null
           closing_message?: string | null
+          conversation_id?: number | null
           created_at?: string
           details?: string | null
           id?: string
@@ -281,15 +287,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_request_from_bot: {
-        Args: {
-          p_benefit_text: string
-          p_cpf: string
-          p_name: string
-          p_protocol: string
-        }
-        Returns: Json
-      }
+      create_request_from_bot:
+        | {
+            Args: {
+              p_benefit_text: string
+              p_cpf: string
+              p_name: string
+              p_protocol: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_account_id?: number
+              p_benefit_text: string
+              p_conversation_id?: number
+              p_cpf: string
+              p_name: string
+              p_protocol: string
+            }
+            Returns: Json
+          }
       get_my_unit_id: { Args: never; Returns: string }
       has_role: {
         Args: {
