@@ -130,8 +130,9 @@ export function NewBenefitDialog({ onSuccess }: { onSuccess?: () => void }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Nova Solicitação
+          <Plus className="h-4 w-4 shrink-0" />
+          <span className="hidden sm:inline">Nova Solicitação</span>
+          <span className="sm:hidden">Nova</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">

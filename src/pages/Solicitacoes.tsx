@@ -313,8 +313,8 @@ export default function Solicitacoes() {
       onClick={() => handleSort(field)}
     >
       <div className="flex items-center gap-1">
-        {children}
-        <ArrowUpDown className={`h-3 w-3 ${sortField === field ? 'text-primary' : 'text-muted-foreground/50'}`} />
+        <span className="truncate">{children}</span>
+        <ArrowUpDown className={`h-3 w-3 shrink-0 ${sortField === field ? 'text-primary' : 'text-muted-foreground/50'}`} />
       </div>
     </TableHead>
   );
@@ -333,8 +333,8 @@ export default function Solicitacoes() {
           <div className="flex gap-3">
             <NewBenefitDialog onSuccess={fetchRequests} />
             <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              Exportar
+              <Download className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">Exportar</span>
             </Button>
           </div>
         </div>
@@ -346,7 +346,7 @@ export default function Solicitacoes() {
         <div className="rounded-xl border border-border bg-card p-5 space-y-5">
           {/* Busca inteligente */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground shrink-0" />
             <Input
               placeholder="Buscar por protocolo, colaborador, CPF ou telefone..."
               value={search}
@@ -361,7 +361,7 @@ export default function Solicitacoes() {
               <Label className="text-xs text-muted-foreground">Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="h-9">
-                  <Filter className="mr-2 h-3 w-3" />
+                  <Filter className="mr-2 h-3 w-3 shrink-0" />
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -395,7 +395,7 @@ export default function Solicitacoes() {
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Data Inicial</Label>
               <div className="relative">
-                <Calendar className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Calendar className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground shrink-0" />
                 <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="pl-8 h-9" />
               </div>
             </div>
@@ -403,7 +403,7 @@ export default function Solicitacoes() {
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Data Final</Label>
               <div className="relative">
-                <Calendar className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Calendar className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground shrink-0" />
                 <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="pl-8 h-9" />
               </div>
             </div>
@@ -425,8 +425,9 @@ export default function Solicitacoes() {
                 onClick={clearFilters} 
                 className="h-9 bg-muted/50 border-border hover:bg-muted text-muted-foreground hover:text-foreground"
               >
-                <Eraser className="mr-2 h-4 w-4" />
-                Limpar filtros
+                <Eraser className="mr-2 h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">Limpar filtros</span>
+                <span className="sm:hidden">Limpar</span>
               </Button>
             </div>
           </div>
@@ -475,10 +476,10 @@ export default function Solicitacoes() {
                       <TableCell className="font-mono text-sm">{request.protocol}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
                             {request.profiles?.full_name?.split(' ').map((n) => n[0]).join('').slice(0, 2) || '??'}
                           </div>
-                          <span className="font-medium">{request.profiles?.full_name || 'Usuário'}</span>
+                          <span className="font-medium truncate max-w-[150px]">{request.profiles?.full_name || 'Usuário'}</span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -489,8 +490,8 @@ export default function Solicitacoes() {
                             rel="noopener noreferrer"
                             className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
                           >
-                            {request.profiles.phone}
-                            <ExternalLink className="h-3 w-3" />
+                            <span className="truncate">{request.profiles.phone}</span>
+                            <ExternalLink className="h-3 w-3 shrink-0" />
                           </a>
                         ) : (
                           <span className="text-muted-foreground">-</span>
@@ -502,8 +503,8 @@ export default function Solicitacoes() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          {getSLATime(request.created_at)}
+                          <Clock className="h-3 w-3 shrink-0" />
+                          <span className="truncate">{getSLATime(request.created_at)}</span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -513,11 +514,11 @@ export default function Solicitacoes() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
+                          className="h-8 w-8 shrink-0 hover:bg-primary/10 hover:text-primary"
                           onClick={() => handleViewDetails(request.id, globalIndex)}
                           title="Ver detalhes"
                         >
-                          <Eye className="h-4 w-4" />
+                          <Eye className="h-4 w-4 shrink-0" />
                         </Button>
                       </TableCell>
                     </TableRow>

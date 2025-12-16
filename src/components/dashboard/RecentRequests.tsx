@@ -111,28 +111,29 @@ export function RecentRequests() {
         <h3 className="text-lg font-semibold text-foreground">Solicitações Recentes</h3>
         <Link 
           to="/solicitacoes" 
-          className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+          className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors shrink-0"
         >
-          Ver todas
-          <ArrowRight className="h-4 w-4" />
+          <span className="hidden sm:inline">Ver todas</span>
+          <span className="sm:hidden">Ver</span>
+          <ArrowRight className="h-4 w-4 shrink-0" />
         </Link>
       </div>
       <div className="divide-y divide-border">
         {requests.map((request) => (
-          <div key={request.id} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
-            <div className="flex items-center gap-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-semibold">
+          <div key={request.id} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors gap-4">
+            <div className="flex items-center gap-4 min-w-0 flex-1">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-semibold">
                 {request.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '??'}
               </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">{request.full_name}</p>
-                <p className="text-xs text-muted-foreground">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-foreground truncate">{request.full_name}</p>
+                <p className="text-xs text-muted-foreground truncate">
                   {request.protocol} • {benefitTypeLabels[request.benefit_type]}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-xs text-muted-foreground">
+            <div className="flex items-center gap-4 shrink-0">
+              <span className="text-xs text-muted-foreground whitespace-nowrap hidden sm:block">
                 {new Date(request.created_at).toLocaleDateString('pt-BR')}
               </span>
               <StatusBadge status={request.status} />

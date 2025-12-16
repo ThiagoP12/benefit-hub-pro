@@ -119,8 +119,8 @@ export function NotificationsBell() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+        <Button variant="ghost" size="icon" className="relative shrink-0">
+          <Bell className="h-5 w-5 shrink-0" />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-medium">
               {unreadCount > 9 ? '9+' : unreadCount}
@@ -145,7 +145,7 @@ export function NotificationsBell() {
         <ScrollArea className="h-[300px]">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-8 text-muted-foreground">
-              <Bell className="h-8 w-8 mb-2 opacity-50" />
+              <Bell className="h-8 w-8 mb-2 opacity-50 shrink-0" />
               <p className="text-sm">Nenhuma notificação</p>
             </div>
           ) : (
@@ -160,9 +160,9 @@ export function NotificationsBell() {
                   onClick={() => markAsRead(notification.id)}
                 >
                   <div className="flex gap-3">
-                    <span className="text-lg">{getTypeIcon(notification.type)}</span>
+                    <span className="text-lg shrink-0">{getTypeIcon(notification.type)}</span>
                     <div className="flex-1 min-w-0">
-                      <p className={cn('text-sm', !notification.read && 'font-medium')}>
+                      <p className={cn('text-sm truncate', !notification.read && 'font-medium')}>
                         {notification.title}
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
@@ -176,7 +176,7 @@ export function NotificationsBell() {
                       </p>
                     </div>
                     {!notification.read && (
-                      <span className="h-2 w-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+                      <span className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />
                     )}
                   </div>
                 </button>
