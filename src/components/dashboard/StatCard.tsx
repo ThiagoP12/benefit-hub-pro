@@ -48,8 +48,8 @@ export function StatCard({ title, value, icon: Icon, trend, variant = 'default' 
             </p>
           )}
         </div>
-        <div className={cn('rounded-lg sm:rounded-xl p-2 sm:p-3 shrink-0', iconStyles[variant])}>
-          <Icon className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7 shrink-0" />
+        <div className={cn('rounded-md sm:rounded-lg lg:rounded-xl p-1.5 sm:p-2 lg:p-3 shrink-0', iconStyles[variant])}>
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 shrink-0" />
         </div>
       </div>
     </div>
