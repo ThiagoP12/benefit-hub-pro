@@ -150,12 +150,13 @@ export function ColaboradorHistorySheet({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 text-xs gap-1.5"
+                  className="h-7 text-xs gap-1.5 shrink-0"
                   onClick={exportToCSV}
                   disabled={filteredRequests.length === 0}
                 >
-                  <Download className="h-3.5 w-3.5" />
-                  Exportar
+                  <Download className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden sm:inline">Exportar</span>
+                  <span className="sm:hidden">CSV</span>
                 </Button>
               </div>
               
@@ -273,8 +274,8 @@ export function ColaboradorHistorySheet({
                       className="w-full mt-2 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
                       onClick={() => window.open(request.pdf_url!, '_blank')}
                     >
-                      <FileText className="h-4 w-4 mr-2" />
-                      Visualizar PDF
+                      <FileText className="h-4 w-4 shrink-0" />
+                      <span>Visualizar PDF</span>
                     </Button>
                   )}
 
@@ -290,7 +291,7 @@ export function ColaboradorHistorySheet({
 
                   {request.status === 'aprovada' && !request.pdf_url && (
                     <div className="flex items-center gap-2 rounded-md bg-amber-500/10 border border-amber-500/20 p-3 mt-2">
-                      <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                      <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
                       <span className="text-sm text-amber-700 dark:text-amber-300">Aprovado - Aguardando PDF</span>
                     </div>
                   )}
