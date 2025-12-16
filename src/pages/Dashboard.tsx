@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { BenefitsChart } from '@/components/dashboard/BenefitsChart';
@@ -33,6 +34,7 @@ interface RequestData {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({ total: 0, today: 0, abertos: 0, emAnalise: 0, aprovados: 0, reprovados: 0 });
   const [benefitTypeData, setBenefitTypeData] = useState<{ type: BenefitType; count: number }[]>([]);
   const [allRequests, setAllRequests] = useState<RequestData[]>([]);
@@ -122,7 +124,7 @@ export default function Dashboard() {
     const end = filters.endDate || new Date();
     const start = filters.startDate || subMonths(end, 5);
     
-    const months: { month: string; solicitacoes: number; aprovadas: number }[] = [];
+    const months: { month: string; solicitacoes: number; aprovadas: number; recusadas: number }[] = [];
     const currentDate = startOfMonth(start);
     const endMonth = startOfMonth(end);
     
@@ -138,7 +140,8 @@ export default function Dashboard() {
       months.push({
         month: format(currentDate, 'MMM', { locale: ptBR }),
         solicitacoes: monthRequests.length,
-        aprovadas: monthRequests.filter((r) => r.status === 'aprovada').length,
+        aprovadas: monthRequests.filter((r) => r.status === 'aprovada' || r.status === 'concluida').length,
+        recusadas: monthRequests.filter((r) => r.status === 'recusada').length,
       });
       
       currentDate.setMonth(currentDate.getMonth() + 1);
@@ -171,35 +174,41 @@ export default function Dashboard() {
             title="Total"
             value={stats.total}
             icon={FileText}
+            onClick={() => navigate('/solicitacoes')}
           />
           <StatCard
             title="Hoje"
             value={stats.today}
             icon={TrendingUp}
+            onClick={() => navigate('/solicitacoes')}
           />
           <StatCard
             title="Aberto"
             value={stats.abertos}
             icon={FolderOpen}
             variant="info"
+            onClick={() => navigate('/solicitacoes?status=aberta')}
           />
           <StatCard
             title="Análise"
             value={stats.emAnalise}
             icon={Clock}
             variant="warning"
+            onClick={() => navigate('/solicitacoes?status=em_analise')}
           />
           <StatCard
             title="Aprovadas"
             value={stats.aprovados}
             icon={CheckCircle}
             variant="success"
+            onClick={() => navigate('/solicitacoes?status=aprovada')}
           />
           <StatCard
             title="Reprovadas"
             value={stats.reprovados}
             icon={XCircle}
             variant="destructive"
+            onClick={() => navigate('/solicitacoes?status=recusada')}
           />
         </div>
 

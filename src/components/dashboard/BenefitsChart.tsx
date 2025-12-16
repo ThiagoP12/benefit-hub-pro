@@ -4,6 +4,7 @@ interface MonthlyData {
   month: string;
   solicitacoes: number;
   aprovadas: number;
+  recusadas: number;
 }
 
 interface BenefitsChartProps {
@@ -12,7 +13,7 @@ interface BenefitsChartProps {
 
 export function BenefitsChart({ data }: BenefitsChartProps) {
 
-  const hasData = data.length > 0 && data.some(d => d.solicitacoes > 0 || d.aprovadas > 0);
+  const hasData = data.length > 0 && data.some(d => d.solicitacoes > 0 || d.aprovadas > 0 || d.recusadas > 0);
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 sm:p-6 animate-slide-up">
@@ -63,6 +64,12 @@ export function BenefitsChart({ data }: BenefitsChartProps) {
               dataKey="aprovadas" 
               name="Aprovadas" 
               fill="hsl(var(--chart-4))" 
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar 
+              dataKey="recusadas" 
+              name="Recusadas" 
+              fill="hsl(var(--destructive))" 
               radius={[4, 4, 0, 0]}
             />
           </BarChart>
