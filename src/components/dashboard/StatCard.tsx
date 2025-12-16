@@ -10,6 +10,7 @@ interface StatCardProps {
     isPositive: boolean;
   };
   variant?: 'default' | 'primary' | 'success' | 'warning' | 'info' | 'destructive';
+  onClick?: () => void;
 }
 
 const variantStyles = {
@@ -30,12 +31,16 @@ const iconStyles = {
   destructive: 'bg-destructive text-destructive-foreground',
 };
 
-export function StatCard({ title, value, icon: Icon, trend, variant = 'default' }: StatCardProps) {
+export function StatCard({ title, value, icon: Icon, trend, variant = 'default', onClick }: StatCardProps) {
   return (
-    <div className={cn(
-      'rounded-xl border p-4 sm:p-5 lg:p-6 transition-all duration-200 hover:shadow-md hover:border-primary/30 animate-fade-in',
-      variantStyles[variant]
-    )}>
+    <div 
+      className={cn(
+        'rounded-xl border p-4 sm:p-5 lg:p-6 transition-all duration-200 hover:shadow-md hover:border-primary/30 animate-fade-in',
+        variantStyles[variant],
+        onClick && 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]'
+      )}
+      onClick={onClick}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wide truncate">{title}</p>

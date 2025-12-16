@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { benefitTypeLabels, benefitTypeFilterLabels, statusLabels, statusFilterLabels, BenefitStatus, BenefitType } from '@/types/benefits';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -49,8 +50,12 @@ type SortField = 'created_at' | 'full_name' | 'status' | 'benefit_type';
 type SortOrder = 'asc' | 'desc';
 
 export default function Solicitacoes() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>(() => {
+    const urlStatus = searchParams.get('status');
+    return urlStatus || 'all';
+  });
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -305,6 +310,20 @@ export default function Solicitacoes() {
     setEndDate('');
     setWhatsappFilter('');
     setCurrentPage(1);
+    // Clear URL params
+    setSearchParams({});
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setCurrentPage(1);
+    // Update URL params
+    if (value === 'all') {
+      searchParams.delete('status');
+    } else {
+      searchParams.set('status', value);
+    }
+    setSearchParams(searchParams);
   };
 
   const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
@@ -359,7 +378,7 @@ export default function Solicitacoes() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Status</Label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
                 <SelectTrigger className="h-9">
                   <Filter className="mr-2 h-3 w-3 shrink-0" />
                   <SelectValue placeholder="Status" />
