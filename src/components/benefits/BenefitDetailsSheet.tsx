@@ -145,7 +145,7 @@ export function BenefitDetailsSheet({
 
       console.log("Enviando webhook:", webhookData);
 
-      const response = await fetch("https://n8n.revalle.com.br/webhook-test/aprovacao", {
+      const response = await fetch("https://n8n.revalle.com.br/webhook/aprovacao", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
