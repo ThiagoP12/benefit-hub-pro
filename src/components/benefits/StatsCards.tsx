@@ -58,12 +58,12 @@ export function StatsCards({ requests }: StatsCardsProps) {
         <Card key={card.title} className="border-border/50">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${card.bgColor}`}>
-                <card.icon className={`h-5 w-5 ${card.color}`} />
+              <div className={`p-2 rounded-lg shrink-0 ${card.bgColor}`}>
+                <card.icon className={`h-5 w-5 shrink-0 ${card.color}`} />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-2xl font-bold">{card.value}</p>
-                <p className="text-xs text-muted-foreground">{card.title}</p>
+                <p className="text-xs text-muted-foreground truncate">{card.title}</p>
               </div>
             </div>
           </CardContent>

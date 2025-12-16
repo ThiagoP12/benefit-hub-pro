@@ -244,32 +244,32 @@ export default function Colaboradores() {
                 <div className="mt-4 space-y-2">
                   {profile.birthday && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
-                      <span>Aniversário: {profile.birthday}</span>
+                      <Calendar className="h-4 w-4 shrink-0" />
+                      <span className="truncate">Aniversário: {profile.birthday}</span>
                     </div>
                   )}
                   {profile.phone && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Phone className="h-4 w-4" />
-                      <span>{profile.phone}</span>
+                      <Phone className="h-4 w-4 shrink-0" />
+                      <span className="truncate">{profile.phone}</span>
                     </div>
                   )}
                   {profile.units && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Building2 className="h-4 w-4" />
-                      <span>{profile.units.name}</span>
+                      <Building2 className="h-4 w-4 shrink-0" />
+                      <span className="truncate">{profile.units.name}</span>
                     </div>
                   )}
                   {profile.position && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Briefcase className="h-4 w-4" />
-                      <span>{profile.position}</span>
+                      <Briefcase className="h-4 w-4 shrink-0" />
+                      <span className="truncate">{profile.position}</span>
                     </div>
                   )}
                   {profile.departamento && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Building2 className="h-4 w-4 opacity-70" />
-                      <span className="text-xs">{DEPARTAMENTOS_LABELS[profile.departamento] || profile.departamento}</span>
+                      <Building2 className="h-4 w-4 opacity-70 shrink-0" />
+                      <span className="text-xs truncate">{DEPARTAMENTOS_LABELS[profile.departamento] || profile.departamento}</span>
                     </div>
                   )}
                 </div>
