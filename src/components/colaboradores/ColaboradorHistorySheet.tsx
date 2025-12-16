@@ -30,7 +30,7 @@ const statusLabels: Record<BenefitStatus, string> = {
   em_analise: 'Em Análise',
   aprovada: 'Aprovada',
   recusada: 'Recusada',
-  concluida: 'Concluída',
+  concluida: 'Aprovada', // Concluída é exibida como Aprovada
 };
 
 interface ColaboradorHistorySheetProps {
@@ -267,7 +267,7 @@ export function ColaboradorHistorySheet({
                   </div>
 
                   {/* Área de Decisão Condicional */}
-                  {request.status === 'concluida' && request.pdf_url && (
+                  {(request.status === 'concluida' || request.status === 'aprovada') && request.pdf_url && (
                     <Button
                       variant="outline"
                       size="sm"

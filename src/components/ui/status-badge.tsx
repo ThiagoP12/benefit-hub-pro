@@ -11,7 +11,7 @@ const statusStyles: Record<BenefitStatus, string> = {
   em_analise: 'bg-warning/15 text-warning border-warning/30',
   aprovada: 'bg-success/15 text-success border-success/30',
   recusada: 'bg-destructive/15 text-destructive border-destructive/30',
-  concluida: 'bg-muted text-muted-foreground border-border',
+  concluida: 'bg-success/15 text-success border-success/30', // Mesmo estilo de aprovada
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
