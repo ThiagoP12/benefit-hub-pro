@@ -53,15 +53,15 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
   const hasActiveFilters = filters.unitId || filters.benefitType || filters.status || filters.startDate || filters.endDate;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 animate-fade-in">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="rounded-xl border border-border bg-card p-3 sm:p-4 animate-fade-in">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
         {/* Unit Filter */}
         <Select
           value={filters.unitId || 'all'}
           onValueChange={(value) => onFiltersChange({ ...filters, unitId: value === 'all' ? null : value })}
         >
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Todas as unidades" />
+          <SelectTrigger className="w-full h-9 text-xs sm:text-sm">
+            <SelectValue placeholder="Unidades" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas as unidades</SelectItem>
@@ -73,13 +73,13 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
           </SelectContent>
         </Select>
 
-        {/* Benefit Type Filter - without "outros" */}
+        {/* Benefit Type Filter */}
         <Select
           value={filters.benefitType || 'all'}
           onValueChange={(value) => onFiltersChange({ ...filters, benefitType: value === 'all' ? null : (value as BenefitType) })}
         >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Tipo de benefício" />
+          <SelectTrigger className="w-full h-9 text-xs sm:text-sm">
+            <SelectValue placeholder="Tipos" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos os tipos</SelectItem>
@@ -91,12 +91,12 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
           </SelectContent>
         </Select>
 
-        {/* Status Filter - without duplicate "encerrado" */}
+        {/* Status Filter */}
         <Select
           value={filters.status || 'all'}
           onValueChange={(value) => onFiltersChange({ ...filters, status: value === 'all' ? null : (value as BenefitStatus) })}
         >
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full h-9 text-xs sm:text-sm">
             <SelectValue placeholder="Situação" />
           </SelectTrigger>
           <SelectContent>
@@ -109,22 +109,24 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
           </SelectContent>
         </Select>
 
-        {/* Date Range */}
+        {/* Start Date */}
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               className={cn(
-                'w-[200px] justify-start text-left font-normal',
+                'w-full h-9 justify-start text-left font-normal text-xs sm:text-sm px-2 sm:px-3',
                 !filters.startDate && 'text-muted-foreground'
               )}
             >
-              <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-              {filters.startDate ? (
-                format(filters.startDate, 'dd/MM/yyyy', { locale: ptBR })
-              ) : (
-                'Data inicial'
-              )}
+              <CalendarIcon className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+              <span className="truncate">
+                {filters.startDate ? (
+                  format(filters.startDate, 'dd/MM/yyyy', { locale: ptBR })
+                ) : (
+                  'Data inicial'
+                )}
+              </span>
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -137,21 +139,24 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
           </PopoverContent>
         </Popover>
 
+        {/* End Date */}
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               className={cn(
-                'w-[200px] justify-start text-left font-normal',
+                'w-full h-9 justify-start text-left font-normal text-xs sm:text-sm px-2 sm:px-3',
                 !filters.endDate && 'text-muted-foreground'
               )}
             >
-              <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-              {filters.endDate ? (
-                format(filters.endDate, 'dd/MM/yyyy', { locale: ptBR })
-              ) : (
-                'Data final'
-              )}
+              <CalendarIcon className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+              <span className="truncate">
+                {filters.endDate ? (
+                  format(filters.endDate, 'dd/MM/yyyy', { locale: ptBR })
+                ) : (
+                  'Data final'
+                )}
+              </span>
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -169,10 +174,10 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
           variant="outline" 
           onClick={clearFilters} 
           disabled={!hasActiveFilters}
-          className="bg-muted/50 border-border hover:bg-muted text-muted-foreground hover:text-foreground"
+          className="w-full h-9 bg-muted/50 border-border hover:bg-muted text-muted-foreground hover:text-foreground text-xs sm:text-sm px-2 sm:px-3"
         >
-          <Eraser className="mr-2 h-4 w-4 shrink-0" />
-          Limpar filtros
+          <Eraser className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+          <span className="truncate">Limpar filtros</span>
         </Button>
       </div>
     </div>

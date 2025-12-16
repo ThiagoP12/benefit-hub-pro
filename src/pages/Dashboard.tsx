@@ -149,12 +149,16 @@ export default function Dashboard() {
 
   return (
     <MainLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard - Revalle Gestão do DP</h1>
-          <p className="mt-1 text-muted-foreground">
-            Acompanhamento em tempo real das solicitações e análises do DP
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">
+            Dashboard
+            <span className="hidden sm:inline"> - Revalle Gestão do DP</span>
+          </h1>
+          <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
+            <span className="hidden sm:inline">Acompanhamento em tempo real das solicitações e análises do DP</span>
+            <span className="sm:hidden">Visão geral das solicitações</span>
           </p>
         </div>
 
@@ -162,25 +166,25 @@ export default function Dashboard() {
         <DashboardFiltersComponent filters={filters} onFiltersChange={setFilters} />
 
         {/* Stats Grid - 6 KPI Cards */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 sm:grid-cols-3 lg:grid-cols-6">
           <StatCard
-            title="Total de Solicitações"
+            title="Total"
             value={stats.total}
             icon={FileText}
           />
           <StatCard
-            title="Total Hoje"
+            title="Hoje"
             value={stats.today}
             icon={TrendingUp}
           />
           <StatCard
-            title="Em Aberto"
+            title="Aberto"
             value={stats.abertos}
             icon={FolderOpen}
             variant="info"
           />
           <StatCard
-            title="Em Análise"
+            title="Análise"
             value={stats.emAnalise}
             icon={Clock}
             variant="warning"
@@ -202,7 +206,7 @@ export default function Dashboard() {
         <BenefitCategoryCards data={benefitTypeData} />
 
         {/* Charts Grid */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
           <BenefitsChart data={monthlyData} />
           <BenefitTypeChart data={benefitTypeData} />
         </div>
