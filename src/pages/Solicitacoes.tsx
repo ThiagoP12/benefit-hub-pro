@@ -85,7 +85,8 @@ export default function Solicitacoes() {
 
     const { data: profilesData } = await supabase
       .from('profiles')
-      .select('user_id, full_name, phone, cpf');
+      .select('user_id, full_name, phone, cpf')
+      .range(0, 10000);
 
     const requestsWithProfiles = requestsData.map((request) => {
       const profile = profilesData?.find((p) => p.user_id === request.user_id);
