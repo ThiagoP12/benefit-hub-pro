@@ -61,15 +61,35 @@ export function NewBenefitDialog({ onSuccess }: { onSuccess?: () => void }) {
 
   useEffect(() => {
     const fetchProfiles = async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('id, user_id, full_name, cpf')
-        .order('full_name')
-        .range(0, 10000);
-      
-      if (data) setProfiles(data);
+      const pageSize = 1000;
+      let page = 0;
+      let hasMore = true;
+      let allProfiles: Profile[] = [];
+
+      while (hasMore) {
+        const { data: profilesPage, error } = await supabase
+          .from('profiles')
+          .select('id, user_id, full_name, cpf')
+          .order('full_name')
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        if (error) {
+          console.error('Error fetching profiles:', error);
+          break;
+        }
+
+        if (profilesPage && profilesPage.length > 0) {
+          allProfiles = [...allProfiles, ...profilesPage];
+          page++;
+          hasMore = profilesPage.length === pageSize;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      setProfiles(allProfiles);
     };
-    
+
     if (open) fetchProfiles();
   }, [open]);
 

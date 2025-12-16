@@ -83,13 +83,23 @@ export default function Solicitacoes() {
       return;
     }
 
-    const { data: profilesData } = await supabase
-      .from('profiles')
-      .select('user_id, full_name, phone, cpf')
-      .range(0, 10000);
+    const userIds = [...new Set((requestsData || []).map((r) => r.user_id).filter(Boolean))];
 
-    const requestsWithProfiles = requestsData.map((request) => {
-      const profile = profilesData?.find((p) => p.user_id === request.user_id);
+    const { data: profilesData, error: profilesError } = userIds.length
+      ? await supabase
+          .from('profiles')
+          .select('user_id, full_name, phone, cpf')
+          .in('user_id', userIds)
+      : { data: [], error: null };
+
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError);
+    }
+
+    const profilesMap = new Map((profilesData || []).map((p) => [p.user_id, p]));
+
+    const requestsWithProfiles = (requestsData || []).map((request) => {
+      const profile = profilesMap.get(request.user_id);
       return {
         ...request,
         profiles: profile ? { full_name: profile.full_name, phone: profile.phone, cpf: profile.cpf } : null,
