@@ -8,7 +8,7 @@ import { BenefitTypeChart } from '@/components/dashboard/BenefitTypeChart';
 import { BenefitCategoryCards } from '@/components/dashboard/BenefitCategoryCards';
 import { RecentRequests } from '@/components/dashboard/RecentRequests';
 import { DashboardFiltersComponent, DashboardFilters } from '@/components/dashboard/DashboardFilters';
-import { FileText, Clock, CheckCircle, CheckSquare, FolderOpen, TrendingUp } from 'lucide-react';
+import { FileText, Clock, CheckCircle, FolderOpen, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { BenefitType } from '@/types/benefits';
 import { benefitTypes } from '@/data/mockData';
@@ -22,7 +22,6 @@ interface DashboardStats {
   abertos: number;
   emAnalise: number;
   aprovados: number;
-  concluidos: number;
 }
 
 interface RequestData {
@@ -33,7 +32,7 @@ interface RequestData {
 }
 
 export default function Dashboard() {
-  const [stats, setStats] = useState<DashboardStats>({ total: 0, today: 0, abertos: 0, emAnalise: 0, aprovados: 0, concluidos: 0 });
+  const [stats, setStats] = useState<DashboardStats>({ total: 0, today: 0, abertos: 0, emAnalise: 0, aprovados: 0 });
   const [benefitTypeData, setBenefitTypeData] = useState<{ type: BenefitType; count: number }[]>([]);
   const [allRequests, setAllRequests] = useState<RequestData[]>([]);
   const [filters, setFilters] = useState<DashboardFilters>({
@@ -101,10 +100,9 @@ export default function Dashboard() {
       
       const abertos = filteredData.filter(r => r.status === 'aberta').length;
       const emAnalise = filteredData.filter(r => r.status === 'em_analise').length;
-      const aprovados = filteredData.filter(r => r.status === 'aprovada').length;
-      const concluidos = filteredData.filter(r => r.status === 'concluida' || r.status === 'recusada').length;
+      const aprovados = filteredData.filter(r => r.status === 'aprovada' || r.status === 'concluida').length;
 
-      setStats({ total, today, abertos, emAnalise, aprovados, concluidos });
+      setStats({ total, today, abertos, emAnalise, aprovados });
 
       // Calculate benefit type counts (without "outros")
       const typeData = filteredBenefitTypes.map(type => ({
@@ -165,8 +163,8 @@ export default function Dashboard() {
         {/* Filters */}
         <DashboardFiltersComponent filters={filters} onFiltersChange={setFilters} />
 
-        {/* Stats Grid - 6 KPI Cards */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        {/* Stats Grid - 5 KPI Cards */}
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 sm:grid-cols-3 lg:grid-cols-5">
           <StatCard
             title="Total"
             value={stats.total}
@@ -194,11 +192,6 @@ export default function Dashboard() {
             value={stats.aprovados}
             icon={CheckCircle}
             variant="success"
-          />
-          <StatCard
-            title="Concluídas"
-            value={stats.concluidos}
-            icon={CheckSquare}
           />
         </div>
 
