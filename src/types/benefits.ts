@@ -72,16 +72,15 @@ export const statusLabels: Record<BenefitStatus, string> = {
   em_analise: 'Em Análise',
   aprovada: 'Aprovado',
   recusada: 'Recusado',
-  concluida: 'Concluído',
+  concluida: 'Aprovado', // Concluída é exibida como Aprovado na UI
 };
 
-// Status labels for filters
-export const statusFilterLabels: Record<BenefitStatus, string> = {
+// Status labels for filters (sem concluida)
+export const statusFilterLabels: Record<Exclude<BenefitStatus, 'concluida'>, string> = {
   aberta: 'Aberto',
   em_analise: 'Em Análise',
   aprovada: 'Aprovado',
   recusada: 'Reprovado',
-  concluida: 'Concluído',
 };
 
 // Benefit types without "outros" for filters

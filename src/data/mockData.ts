@@ -9,7 +9,7 @@ export interface DashboardStats {
   abertos: number;
   emAnalise: number;
   aprovados: number;
-  concluidos: number;
+  reprovados: number;
 }
 
 export interface MonthlyData {
@@ -49,5 +49,5 @@ export const getMonthlyData = (): MonthlyData[] => {
 // Benefit types list
 export const benefitTypes: BenefitType[] = ['autoescola', 'farmacia', 'oficina', 'vale_gas', 'papelaria', 'otica'];
 
-// Status list
-export const statuses: BenefitStatus[] = ['aberta', 'em_analise', 'aprovada', 'recusada', 'concluida'];
+// Status list (sem concluida na UI)
+export const statuses: BenefitStatus[] = ['aberta', 'em_analise', 'aprovada', 'recusada'];
