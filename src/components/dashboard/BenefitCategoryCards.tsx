@@ -56,13 +56,13 @@ export function BenefitCategoryCards({ data }: BenefitCategoryCardsProps) {
                   item.count > 0 ? 'cursor-pointer' : 'cursor-default opacity-60'
                 )}
               >
-              <div className={cn('flex items-center justify-center mb-3', styles.text)}>
-                  <Icon className="h-10 w-10 drop-shadow-lg" style={{ filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15))' }} />
+              <div className={cn('flex items-center justify-center mb-3 shrink-0', styles.text)}>
+                  <Icon className="h-10 w-10 shrink-0 drop-shadow-lg" style={{ filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15))' }} />
                 </div>
                 <p className="text-sm font-semibold text-foreground text-center truncate">
                   {config.label}
                 </p>
-                <p className={cn('text-xs text-muted-foreground text-center mt-1')}>
+                <p className={cn('text-xs text-muted-foreground text-center mt-1 truncate')}>
                   {item.count} {item.count === 1 ? 'solicitação' : 'solicitações'}
                 </p>
                 <p className={cn('text-xs font-medium text-center mt-0.5', styles.text)}>

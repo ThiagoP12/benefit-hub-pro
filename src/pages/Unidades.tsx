@@ -183,14 +183,14 @@ export default function Unidades() {
               <div className="h-2 bg-gradient-to-r from-primary to-primary/60" />
               <div className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Building2 className="h-6 w-6" />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Building2 className="h-6 w-6 shrink-0" />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg text-foreground">{unit.name}</h3>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-lg text-foreground truncate">{unit.name}</h3>
                     <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                      <MapPin className="h-3.5 w-3.5" />
-                      <span>{formatCnpj(unit.code)}</span>
+                      <MapPin className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">{formatCnpj(unit.code)}</span>
                     </div>
                   </div>
                 </div>
@@ -198,8 +198,8 @@ export default function Unidades() {
                 <div className="mt-6 grid grid-cols-2 gap-4">
                   <div className="rounded-lg bg-muted/50 p-3 text-center">
                     <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                      <Users className="h-4 w-4" />
-                      <span className="text-xs font-medium">Colaboradores</span>
+                      <Users className="h-4 w-4 shrink-0" />
+                      <span className="text-xs font-medium truncate">Colaboradores</span>
                     </div>
                     <p className="mt-1 text-2xl font-bold text-foreground">
                       {unit.collaborators_count}
@@ -207,8 +207,8 @@ export default function Unidades() {
                   </div>
                   <div className="rounded-lg bg-muted/50 p-3 text-center">
                     <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                      <FileText className="h-4 w-4" />
-                      <span className="text-xs font-medium">Solicitações</span>
+                      <FileText className="h-4 w-4 shrink-0" />
+                      <span className="text-xs font-medium truncate">Solicitações</span>
                     </div>
                     <p className="mt-1 text-2xl font-bold text-foreground">
                       {unit.requests_count}

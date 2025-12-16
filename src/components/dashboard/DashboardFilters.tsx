@@ -119,7 +119,7 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
                 !filters.startDate && 'text-muted-foreground'
               )}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
+              <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
               {filters.startDate ? (
                 format(filters.startDate, 'dd/MM/yyyy', { locale: ptBR })
               ) : (
@@ -146,7 +146,7 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
                 !filters.endDate && 'text-muted-foreground'
               )}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
+              <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
               {filters.endDate ? (
                 format(filters.endDate, 'dd/MM/yyyy', { locale: ptBR })
               ) : (
@@ -171,7 +171,7 @@ export function DashboardFiltersComponent({ filters, onFiltersChange }: Dashboar
           disabled={!hasActiveFilters}
           className="bg-muted/50 border-border hover:bg-muted text-muted-foreground hover:text-foreground"
         >
-          <Eraser className="mr-2 h-4 w-4" />
+          <Eraser className="mr-2 h-4 w-4 shrink-0" />
           Limpar filtros
         </Button>
       </div>

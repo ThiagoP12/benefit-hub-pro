@@ -189,7 +189,7 @@ export default function Colaboradores() {
         {/* Search */}
         <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground shrink-0" />
             <Input
               placeholder="Buscar por nome ou CPF..."
               value={search}
@@ -228,13 +228,13 @@ export default function Colaboradores() {
                 className="rounded-xl border border-border bg-card p-5 hover:shadow-md transition-all duration-200 animate-fade-in"
               >
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary text-lg font-semibold">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-lg font-semibold">
                     {profile.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-foreground truncate">{profile.full_name}</h3>
                     {profile.cpf && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground truncate">
                         CPF: {profile.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')}
                       </p>
                     )}
