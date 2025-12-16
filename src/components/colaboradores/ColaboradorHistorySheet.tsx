@@ -20,9 +20,10 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { BenefitRequest, benefitTypeLabels, BenefitType, BenefitStatus } from '@/types/benefits';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FileText, AlertCircle, Clock, History, Filter } from 'lucide-react';
+import { FileText, AlertCircle, Clock, History, Filter, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 const statusLabels: Record<BenefitStatus, string> = {
   aberta: 'Aberta',
@@ -95,6 +96,34 @@ export function ColaboradorHistorySheet({
     return format(new Date(dateString), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
   };
 
+  const exportToCSV = () => {
+    if (!colaborador || filteredRequests.length === 0) return;
+
+    const headers = ['Protocolo', 'Tipo', 'Status', 'Valor Aprovado', 'Data', 'Motivo Recusa'];
+    const rows = filteredRequests.map((req) => [
+      req.protocol,
+      benefitTypeLabels[req.benefit_type],
+      statusLabels[req.status],
+      req.approved_value ? `R$ ${req.approved_value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '',
+      format(new Date(req.created_at), 'dd/MM/yyyy HH:mm'),
+      req.rejection_reason || '',
+    ]);
+
+    const csvContent = [
+      headers.join(';'),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(';')),
+    ].join('\n');
+
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `historico_${colaborador.full_name.replace(/\s+/g, '_')}_${format(new Date(), 'yyyyMMdd')}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV exportado com sucesso!');
+  };
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-lg p-0 flex flex-col">
@@ -114,9 +143,21 @@ export function ColaboradorHistorySheet({
           
           {!loading && requests.length > 0 && (
             <div className="mt-4 space-y-3">
-              <Badge variant="secondary" className="text-xs">
-                {filteredRequests.length} de {requests.length} {requests.length === 1 ? 'solicitação' : 'solicitações'}
-              </Badge>
+              <div className="flex items-center justify-between">
+                <Badge variant="secondary" className="text-xs">
+                  {filteredRequests.length} de {requests.length} {requests.length === 1 ? 'solicitação' : 'solicitações'}
+                </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs gap-1.5"
+                  onClick={exportToCSV}
+                  disabled={filteredRequests.length === 0}
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Exportar
+                </Button>
+              </div>
               
               {/* Filtros */}
               <div className="flex items-center gap-2">
