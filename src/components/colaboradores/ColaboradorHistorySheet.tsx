@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -10,12 +10,27 @@ import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { BenefitRequest, benefitTypeLabels } from '@/types/benefits';
+import { BenefitRequest, benefitTypeLabels, BenefitType, BenefitStatus } from '@/types/benefits';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FileText, AlertCircle, Clock, History } from 'lucide-react';
+import { FileText, AlertCircle, Clock, History, Filter } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+
+const statusLabels: Record<BenefitStatus, string> = {
+  aberta: 'Aberta',
+  em_analise: 'Em Análise',
+  aprovada: 'Aprovada',
+  recusada: 'Recusada',
+  concluida: 'Concluída',
+};
 
 interface ColaboradorHistorySheetProps {
   open: boolean;
@@ -33,10 +48,28 @@ export function ColaboradorHistorySheet({
 }: ColaboradorHistorySheetProps) {
   const [requests, setRequests] = useState<BenefitRequest[]>([]);
   const [loading, setLoading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+
+  const filteredRequests = useMemo(() => {
+    return requests.filter((req) => {
+      const matchesStatus = statusFilter === 'all' || req.status === statusFilter;
+      const matchesType = typeFilter === 'all' || req.benefit_type === typeFilter;
+      return matchesStatus && matchesType;
+    });
+  }, [requests, statusFilter, typeFilter]);
+
+  const clearFilters = () => {
+    setStatusFilter('all');
+    setTypeFilter('all');
+  };
+
+  const hasActiveFilters = statusFilter !== 'all' || typeFilter !== 'all';
 
   useEffect(() => {
     if (open && colaborador) {
       fetchRequests();
+      clearFilters();
     }
   }, [open, colaborador]);
 
@@ -80,10 +113,48 @@ export function ColaboradorHistorySheet({
           </SheetHeader>
           
           {!loading && requests.length > 0 && (
-            <div className="mt-4">
+            <div className="mt-4 space-y-3">
               <Badge variant="secondary" className="text-xs">
-                {requests.length} {requests.length === 1 ? 'solicitação' : 'solicitações'}
+                {filteredRequests.length} de {requests.length} {requests.length === 1 ? 'solicitação' : 'solicitações'}
               </Badge>
+              
+              {/* Filtros */}
+              <div className="flex items-center gap-2">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="h-8 text-xs flex-1">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os status</SelectItem>
+                    {Object.entries(statusLabels).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="h-8 text-xs flex-1">
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os tipos</SelectItem>
+                    {Object.entries(benefitTypeLabels).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 text-xs"
+                    onClick={clearFilters}
+                  >
+                    Limpar
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -112,8 +183,17 @@ export function ColaboradorHistorySheet({
                 <p className="font-medium">Nenhuma solicitação</p>
                 <p className="text-sm mt-1">Este colaborador ainda não possui solicitações</p>
               </div>
+            ) : filteredRequests.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <Filter className="h-8 w-8 mx-auto mb-3 opacity-50" />
+                <p className="font-medium">Nenhum resultado</p>
+                <p className="text-sm mt-1">Nenhuma solicitação corresponde aos filtros</p>
+                <Button variant="link" size="sm" onClick={clearFilters} className="mt-2">
+                  Limpar filtros
+                </Button>
+              </div>
             ) : (
-              requests.map((request, index) => (
+              filteredRequests.map((request) => (
                 <div
                   key={request.id}
                   className="rounded-lg border border-border bg-card p-4 space-y-3 transition-colors hover:border-border/80 hover:bg-accent/30"
