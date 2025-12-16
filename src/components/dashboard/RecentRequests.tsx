@@ -71,20 +71,20 @@ export function RecentRequests() {
   if (loading) {
     return (
       <div className="rounded-xl border border-border bg-card animate-slide-up" style={{ animationDelay: '200ms' }}>
-        <div className="p-6 border-b border-border">
-          <Skeleton className="h-6 w-48" />
+        <div className="p-4 sm:p-6 border-b border-border">
+          <Skeleton className="h-5 sm:h-6 w-40 sm:w-48" />
         </div>
         <div className="divide-y divide-border">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-4">
-                <Skeleton className="h-10 w-10 rounded-full" />
+            <div key={i} className="flex items-center justify-between p-3 sm:p-4">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <Skeleton className="h-8 w-8 sm:h-10 sm:w-10 rounded-full" />
                 <div>
-                  <Skeleton className="h-4 w-32 mb-2" />
-                  <Skeleton className="h-3 w-48" />
+                  <Skeleton className="h-3 sm:h-4 w-24 sm:w-32 mb-1.5 sm:mb-2" />
+                  <Skeleton className="h-2.5 sm:h-3 w-32 sm:w-48" />
                 </div>
               </div>
-              <Skeleton className="h-6 w-20" />
+              <Skeleton className="h-5 sm:h-6 w-16 sm:w-20" />
             </div>
           ))}
         </div>
@@ -95,10 +95,10 @@ export function RecentRequests() {
   if (requests.length === 0) {
     return (
       <div className="rounded-xl border border-border bg-card animate-slide-up" style={{ animationDelay: '200ms' }}>
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <h3 className="text-lg font-semibold text-foreground">Solicitações Recentes</h3>
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
+          <h3 className="text-base sm:text-lg font-semibold text-foreground">Solicitações Recentes</h3>
         </div>
-        <div className="p-8 text-center text-muted-foreground">
+        <div className="p-6 sm:p-8 text-center text-muted-foreground text-sm">
           Nenhuma solicitação recente encontrada
         </div>
       </div>
@@ -107,33 +107,34 @@ export function RecentRequests() {
 
   return (
     <div className="rounded-xl border border-border bg-card animate-slide-up" style={{ animationDelay: '200ms' }}>
-      <div className="flex items-center justify-between p-6 border-b border-border">
-        <h3 className="text-lg font-semibold text-foreground">Solicitações Recentes</h3>
+      <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
+        <h3 className="text-base sm:text-lg font-semibold text-foreground">Solicitações Recentes</h3>
         <Link 
           to="/solicitacoes" 
-          className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors shrink-0"
+          className="flex items-center gap-1 text-xs sm:text-sm font-medium text-primary hover:text-primary/80 transition-colors shrink-0"
         >
           <span className="hidden sm:inline">Ver todas</span>
           <span className="sm:hidden">Ver</span>
-          <ArrowRight className="h-4 w-4 shrink-0" />
+          <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
         </Link>
       </div>
       <div className="divide-y divide-border">
         {requests.map((request) => (
-          <div key={request.id} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors gap-4">
-            <div className="flex items-center gap-4 min-w-0 flex-1">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-semibold">
+          <div key={request.id} className="flex items-center justify-between p-3 sm:p-4 hover:bg-muted/50 transition-colors gap-3 sm:gap-4">
+            <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 flex-1">
+              <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-semibold">
                 {request.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '??'}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-foreground truncate">{request.full_name}</p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {request.protocol} • {benefitTypeLabels[request.benefit_type]}
+                <p className="text-xs sm:text-sm font-medium text-foreground truncate">{request.full_name}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
+                  <span className="hidden sm:inline">{request.protocol} • </span>
+                  {benefitTypeLabels[request.benefit_type]}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4 shrink-0">
-              <span className="text-xs text-muted-foreground whitespace-nowrap hidden sm:block">
+            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+              <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap hidden md:block">
                 {new Date(request.created_at).toLocaleDateString('pt-BR')}
               </span>
               <StatusBadge status={request.status} />
