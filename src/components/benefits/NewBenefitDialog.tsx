@@ -64,7 +64,8 @@ export function NewBenefitDialog({ onSuccess }: { onSuccess?: () => void }) {
       const { data } = await supabase
         .from('profiles')
         .select('id, user_id, full_name, cpf')
-        .order('full_name');
+        .order('full_name')
+        .range(0, 10000);
       
       if (data) setProfiles(data);
     };
