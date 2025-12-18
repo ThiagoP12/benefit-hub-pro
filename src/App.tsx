@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Solicitacoes from "./pages/Solicitacoes";
 import Colaboradores from "./pages/Colaboradores";
 import Unidades from "./pages/Unidades";
+import Usuarios from "./pages/Usuarios";
 import WhatsApp from "./pages/WhatsApp";
 import Configuracoes from "./pages/Configuracoes";
 import Auth from "./pages/Auth";
@@ -27,12 +28,41 @@ const App = () => (
             <Sonner />
             <Routes>
               <Route path="/auth" element={<Auth />} />
-              <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/solicitacoes" element={<ProtectedRoute><Solicitacoes /></ProtectedRoute>} />
-              <Route path="/colaboradores" element={<ProtectedRoute><Colaboradores /></ProtectedRoute>} />
-              <Route path="/unidades" element={<ProtectedRoute><Unidades /></ProtectedRoute>} />
-              <Route path="/whatsapp" element={<ProtectedRoute><WhatsApp /></ProtectedRoute>} />
-              <Route path="/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
+              <Route path="/" element={
+                <ProtectedRoute allowedRoles={['admin', 'gestor', 'agente_dp']}>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/solicitacoes" element={
+                <ProtectedRoute allowedRoles={['admin', 'gestor', 'agente_dp']}>
+                  <Solicitacoes />
+                </ProtectedRoute>
+              } />
+              <Route path="/colaboradores" element={
+                <ProtectedRoute allowedRoles={['admin', 'gestor', 'agente_dp']}>
+                  <Colaboradores />
+                </ProtectedRoute>
+              } />
+              <Route path="/unidades" element={
+                <ProtectedRoute allowedRoles={['admin', 'gestor']}>
+                  <Unidades />
+                </ProtectedRoute>
+              } />
+              <Route path="/usuarios" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <Usuarios />
+                </ProtectedRoute>
+              } />
+              <Route path="/whatsapp" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <WhatsApp />
+                </ProtectedRoute>
+              } />
+              <Route path="/configuracoes" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <Configuracoes />
+                </ProtectedRoute>
+              } />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </TooltipProvider>

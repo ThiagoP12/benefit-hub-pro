@@ -10,69 +10,70 @@ import { toast } from 'sonner';
 import revalleLogo from '@/assets/revalle-logo.png';
 
 export default function Auth() {
-  const navigate = useNavigate();
-  const { isAuthenticated, login } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { login, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/');
+      navigate('/', { replace: true });
     }
   }, [isAuthenticated, navigate]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username.trim() || !password.trim()) {
-      toast.error('Preencha todos os campos');
+    if (!email || !password) {
+      toast.error('Por favor, preencha todos os campos');
       return;
     }
-    
-    setLoading(true);
-    
-    // Simular delay de autenticação
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const success = login(username.trim(), password);
-    
-    setLoading(false);
-    
-    if (success) {
-      toast.success('Login realizado com sucesso!');
-      navigate('/');
-    } else {
-      toast.error('Usuário ou senha incorretos');
+
+    setIsLoading(true);
+
+    try {
+      const { error } = await login(email, password);
+      
+      if (error) {
+        toast.error(error);
+      } else {
+        toast.success('Login realizado com sucesso!');
+        navigate('/', { replace: true });
+      }
+    } catch (error) {
+      toast.error('Erro ao fazer login. Tente novamente.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
-      <Card className="w-full max-w-md animate-scale-in">
-        <CardHeader className="text-center space-y-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 p-4">
+      <Card className="w-full max-w-md shadow-xl border-border/50">
+        <CardHeader className="space-y-1">
           <div className="flex justify-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl overflow-hidden shadow-lg">
               <img src={revalleLogo} alt="Revalle" className="h-14 w-14 object-cover" />
             </div>
           </div>
-          <div>
-            <CardTitle className="text-2xl font-bold">Revalle</CardTitle>
-            <CardDescription>Gestão de Convênios Corporativos</CardDescription>
-          </div>
+          <CardTitle className="text-2xl text-center">Acessar Painel</CardTitle>
+          <CardDescription className="text-center">
+            Entre com suas credenciais para acessar o sistema
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Usuário</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                type="text"
-                placeholder="Digite seu usuário"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                autoComplete="username"
-                required
+                id="email"
+                type="email"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                className="h-11"
               />
             </div>
             <div className="space-y-2">
@@ -83,12 +84,16 @@ export default function Auth() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                required
+                disabled={isLoading}
+                className="h-11"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? (
+            <Button 
+              type="submit" 
+              className="w-full h-11 text-base font-medium"
+              disabled={isLoading}
+            >
+              {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Entrando...

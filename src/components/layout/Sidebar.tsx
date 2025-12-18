@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, AppRole } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
   LayoutDashboard,
@@ -12,33 +12,94 @@ import {
   LogOut,
   Moon,
   Sun,
+  UserCog,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { NotificationsBell } from '@/components/notifications/NotificationsBell';
 import revalleLogo from '@/assets/revalle-logo.png';
 
-const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Convênios', href: '/solicitacoes', icon: FileText },
-  { name: 'Colaboradores', href: '/colaboradores', icon: Users },
-  { name: 'Unidades', href: '/unidades', icon: Building2 },
-  { name: 'WhatsApp', href: '/whatsapp', icon: MessageSquare, badge: 'Em Dev' },
-  { name: 'Configurações', href: '/configuracoes', icon: Settings, badge: 'Em Dev' },
+interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
+  allowedRoles: AppRole[];
+}
+
+const navigation: NavItem[] = [
+  { 
+    name: 'Dashboard', 
+    href: '/', 
+    icon: LayoutDashboard,
+    allowedRoles: ['admin', 'gestor', 'agente_dp']
+  },
+  { 
+    name: 'Convênios', 
+    href: '/solicitacoes', 
+    icon: FileText,
+    allowedRoles: ['admin', 'gestor', 'agente_dp']
+  },
+  { 
+    name: 'Colaboradores', 
+    href: '/colaboradores', 
+    icon: Users,
+    allowedRoles: ['admin', 'gestor', 'agente_dp']
+  },
+  { 
+    name: 'Unidades', 
+    href: '/unidades', 
+    icon: Building2,
+    allowedRoles: ['admin', 'gestor']
+  },
+  { 
+    name: 'Usuários', 
+    href: '/usuarios', 
+    icon: UserCog,
+    allowedRoles: ['admin']
+  },
+  { 
+    name: 'WhatsApp', 
+    href: '/whatsapp', 
+    icon: MessageSquare, 
+    badge: 'Em Dev',
+    allowedRoles: ['admin']
+  },
+  { 
+    name: 'Configurações', 
+    href: '/configuracoes', 
+    icon: Settings, 
+    badge: 'Em Dev',
+    allowedRoles: ['admin']
+  },
 ];
+
+const roleLabels: Record<AppRole, string> = {
+  admin: 'Administrador',
+  gestor: 'Gestor',
+  agente_dp: 'Agente de DP',
+  colaborador: 'Colaborador',
+};
 
 export function Sidebar() {
   const location = useLocation();
-  const { username, logout } = useAuth();
+  const { userName, userRole, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
-  const handleSignOut = () => {
-    logout();
+  const handleSignOut = async () => {
+    await logout();
     toast.success('Você saiu da sua conta');
   };
 
-  const userInitials = username?.slice(0, 2).toUpperCase() || 'DP';
-  const userName = username === 'dp' ? 'Depart. Pessoal' : username || 'Usuário';
+  const userInitials = userName?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
+  const displayName = userName || 'Usuário';
+  const displayRole = userRole ? roleLabels[userRole] : 'Colaborador';
+
+  // Filter navigation items based on user role
+  const filteredNavigation = navigation.filter(item => {
+    if (!userRole) return false;
+    return item.allowedRoles.includes(userRole);
+  });
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-sidebar border-r border-sidebar-border">
@@ -56,7 +117,7 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 px-3 py-4">
-          {navigation.map((item) => {
+          {filteredNavigation.map((item) => {
             const isActive = location.pathname === item.href;
             return (
               <Link
@@ -111,8 +172,8 @@ export function Sidebar() {
               {userInitials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">{userName}</p>
-              <p className="text-xs text-sidebar-muted truncate">Colaborador</p>
+              <p className="text-sm font-medium text-sidebar-foreground truncate">{displayName}</p>
+              <p className="text-xs text-sidebar-muted truncate">{displayRole}</p>
             </div>
             <button 
               onClick={handleSignOut}
