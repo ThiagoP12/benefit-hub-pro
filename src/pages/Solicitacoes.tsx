@@ -283,9 +283,21 @@ export default function Solicitacoes() {
       .eq('user_id', requestData.user_id)
       .single();
 
+    // Buscar nome do responsável pela análise (reviewed_by)
+    let reviewerName = null;
+    if (requestData.reviewed_by) {
+      const { data: reviewerData } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', requestData.reviewed_by)
+        .single();
+      reviewerName = reviewerData?.full_name || null;
+    }
+
     const combinedData = {
       ...requestData,
       profiles: profileData,
+      reviewer_name: reviewerName,
     };
 
     setSelectedRequest(combinedData);

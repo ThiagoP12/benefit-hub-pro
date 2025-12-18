@@ -49,6 +49,9 @@ interface BenefitDetailsSheetProps {
     closing_message: string | null;
     account_id: number | null;
     conversation_id: number | null;
+    reviewed_by: string | null;
+    reviewed_at: string | null;
+    reviewer_name: string | null;
     profiles: {
       full_name: string;
       cpf: string | null;
@@ -348,6 +351,17 @@ export function BenefitDetailsSheet({
                     {format(new Date(request.created_at), "dd/MM/yyyy", { locale: ptBR })}
                   </p>
                 </div>
+                {request.reviewer_name && (
+                  <div className="col-span-2">
+                    <p className="text-xs text-muted-foreground">Responsável pela Análise</p>
+                    <p className="font-medium text-primary">{request.reviewer_name}</p>
+                    {request.reviewed_at && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        desde {format(new Date(request.reviewed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
               {request.details && (
                 <div>
