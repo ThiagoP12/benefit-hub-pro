@@ -41,29 +41,30 @@ import { Plus, Pencil, Trash2, Loader2, Search, UserCog } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
-import { AppRole } from '@/contexts/AuthContext';
+
 
 interface UserWithRole {
   id: string;
   user_id: string;
   email: string;
   full_name: string;
-  role: AppRole;
+  role: 'admin' | 'gestor' | 'agente_dp';
   created_at: string;
 }
 
-const roleLabels: Record<AppRole, string> = {
+// Only roles that can access the system (not colaborador)
+type SystemRole = 'admin' | 'gestor' | 'agente_dp';
+
+const roleLabels: Record<SystemRole, string> = {
   admin: 'Administrador',
   gestor: 'Gestor',
   agente_dp: 'Agente de DP',
-  colaborador: 'Colaborador',
 };
 
-const roleColors: Record<AppRole, string> = {
+const roleColors: Record<SystemRole, string> = {
   admin: 'bg-destructive/10 text-destructive border-destructive/20',
   gestor: 'bg-warning/10 text-warning border-warning/20',
   agente_dp: 'bg-primary/10 text-primary border-primary/20',
-  colaborador: 'bg-muted text-muted-foreground border-border',
 };
 
 export default function Usuarios() {
@@ -76,40 +77,50 @@ export default function Usuarios() {
   const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
   const [formLoading, setFormLoading] = useState(false);
 
-  // Form state
+  // Form state - only system roles (not colaborador)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     full_name: '',
-    role: 'colaborador' as AppRole,
+    role: 'gestor' as 'admin' | 'gestor' | 'agente_dp',
   });
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // Fetch profiles with their roles
+      // Fetch roles - only system users (admin, gestor, agente_dp)
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('role', ['admin', 'gestor', 'agente_dp']);
+
+      if (rolesError) throw rolesError;
+
+      if (!roles || roles.length === 0) {
+        setUsers([]);
+        return;
+      }
+
+      // Get user IDs that have system roles
+      const systemUserIds = roles.map(r => r.user_id);
+
+      // Fetch profiles only for system users
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, user_id, email, full_name, created_at')
+        .in('user_id', systemUserIds)
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
 
-      // Fetch roles for all users
-      const { data: roles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
-
-      if (rolesError) throw rolesError;
-
       // Combine profiles with roles
       const usersWithRoles: UserWithRole[] = (profiles || []).map((profile) => {
-        const userRole = roles?.find((r) => r.user_id === profile.user_id);
+        const userRole = roles.find((r) => r.user_id === profile.user_id);
         return {
           ...profile,
-          role: (userRole?.role as AppRole) || 'colaborador',
+          role: userRole?.role as 'admin' | 'gestor' | 'agente_dp',
         };
-      });
+      }).filter(u => u.role); // Ensure only users with valid roles
 
       setUsers(usersWithRoles);
     } catch (error) {
@@ -168,22 +179,20 @@ export default function Usuarios() {
         console.error('Error updating profile:', profileError);
       }
 
-      // Update user role if not colaborador (default)
-      if (formData.role !== 'colaborador') {
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .update({ role: formData.role })
-          .eq('user_id', authData.user.id);
+      // Update user role (always update since we don't allow colaborador here)
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .update({ role: formData.role })
+        .eq('user_id', authData.user.id);
 
-        if (roleError) {
-          console.error('Error updating role:', roleError);
-          toast.error('Usuário criado, mas erro ao definir permissão');
-        }
+      if (roleError) {
+        console.error('Error updating role:', roleError);
+        toast.error('Usuário criado, mas erro ao definir permissão');
       }
 
       toast.success('Usuário criado com sucesso!');
       setIsCreateDialogOpen(false);
-      setFormData({ email: '', password: '', full_name: '', role: 'colaborador' });
+      setFormData({ email: '', password: '', full_name: '', role: 'gestor' });
       fetchUsers();
     } catch (error) {
       console.error('Error creating user:', error);
@@ -334,7 +343,7 @@ export default function Usuarios() {
                   <Label htmlFor="role">Permissão</Label>
                   <Select
                     value={formData.role}
-                    onValueChange={(value: AppRole) =>
+                    onValueChange={(value: 'admin' | 'gestor' | 'agente_dp') =>
                       setFormData({ ...formData, role: value })
                     }
                   >
@@ -345,7 +354,6 @@ export default function Usuarios() {
                       <SelectItem value="admin">Administrador</SelectItem>
                       <SelectItem value="gestor">Gestor</SelectItem>
                       <SelectItem value="agente_dp">Agente de DP</SelectItem>
-                      <SelectItem value="colaborador">Colaborador</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -459,7 +467,7 @@ export default function Usuarios() {
                 <Label htmlFor="edit-role">Permissão</Label>
                 <Select
                   value={formData.role}
-                  onValueChange={(value: AppRole) =>
+                  onValueChange={(value: 'admin' | 'gestor' | 'agente_dp') =>
                     setFormData({ ...formData, role: value })
                   }
                 >
@@ -470,7 +478,6 @@ export default function Usuarios() {
                     <SelectItem value="admin">Administrador</SelectItem>
                     <SelectItem value="gestor">Gestor</SelectItem>
                     <SelectItem value="agente_dp">Agente de DP</SelectItem>
-                    <SelectItem value="colaborador">Colaborador</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
