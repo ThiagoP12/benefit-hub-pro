@@ -344,9 +344,9 @@ export default function Solicitacoes() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Solicitações de Benefícios</h1>
+            <h1 className="text-3xl font-bold text-foreground">Solicitações de Convênios</h1>
             <p className="mt-1 text-muted-foreground">
-              Cadastre e gerencie solicitações de benefícios dos colaboradores
+              Cadastre e gerencie solicitações de convênios dos colaboradores
             </p>
           </div>
           <div className="flex gap-3">

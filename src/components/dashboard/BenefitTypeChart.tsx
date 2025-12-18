@@ -19,7 +19,7 @@ export function BenefitTypeChart({ data: rawData }: BenefitTypeChartProps) {
   if (!rawData || rawData.length === 0) {
     return (
       <div className="rounded-xl border border-border bg-card p-4 sm:p-6 animate-slide-up" style={{ animationDelay: '100ms' }}>
-        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6">Por Tipo de Benefício</h3>
+        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6">Por Tipo de Convênio</h3>
         <div className="h-52 sm:h-64 lg:h-80 flex items-center justify-center text-muted-foreground text-sm">
           Nenhum dado disponível
         </div>
@@ -35,7 +35,7 @@ export function BenefitTypeChart({ data: rawData }: BenefitTypeChartProps) {
 
   return (
     <div className="rounded-xl border border-border bg-card p-4 sm:p-6 animate-slide-up" style={{ animationDelay: '100ms' }}>
-      <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6">Por Tipo de Benefício</h3>
+      <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-6">Por Tipo de Convênio</h3>
       <div className="h-52 sm:h-64 lg:h-80">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>

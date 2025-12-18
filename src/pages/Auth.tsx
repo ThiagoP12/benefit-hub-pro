@@ -57,7 +57,7 @@ export default function Auth() {
           </div>
           <div>
             <CardTitle className="text-2xl font-bold">Revalle</CardTitle>
-            <CardDescription>Gestão de Benefícios Corporativos</CardDescription>
+            <CardDescription>Gestão de Convênios Corporativos</CardDescription>
           </div>
         </CardHeader>
         <CardContent>

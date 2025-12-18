@@ -250,7 +250,7 @@ export function ColaboradorHistorySheet({
                     </span>
                   </div>
 
-                  {/* Tipo de Benefício */}
+                  {/* Tipo de Convênio */}
                   <div className="text-sm font-medium text-foreground">
                     {benefitTypeLabels[request.benefit_type]}
                   </div>
