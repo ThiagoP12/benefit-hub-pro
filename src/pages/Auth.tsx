@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import revalleLogo from '@/assets/revalle-logo.png';
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -51,8 +52,8 @@ export default function Auth() {
       <Card className="w-full max-w-md animate-scale-in">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary shadow-lg">
-              <FileText className="h-8 w-8 text-primary-foreground" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl overflow-hidden shadow-lg">
+              <img src={revalleLogo} alt="Revalle" className="h-14 w-14 object-cover" />
             </div>
           </div>
           <div>

@@ -16,6 +16,7 @@ import {
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { NotificationsBell } from '@/components/notifications/NotificationsBell';
+import revalleLogo from '@/assets/revalle-logo.png';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -44,8 +45,8 @@ export function Sidebar() {
       <div className="flex h-full flex-col">
         {/* Logo */}
         <div className="flex h-16 items-center gap-3 px-6 border-b border-sidebar-border">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary">
-            <FileText className="h-5 w-5 shrink-0 text-sidebar-primary-foreground" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg overflow-hidden">
+            <img src={revalleLogo} alt="Revalle" className="h-9 w-9 object-cover" />
           </div>
           <div className="min-w-0">
             <h1 className="text-lg font-semibold text-sidebar-foreground truncate">Revalle</h1>
