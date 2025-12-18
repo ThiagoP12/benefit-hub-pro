@@ -94,7 +94,7 @@ export function Sidebar() {
                 variant="ghost"
                 size="icon"
                 onClick={toggleTheme}
-                className="h-8 w-8"
+                className="h-8 w-8 text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent"
                 title={theme === 'light' ? 'Modo escuro' : 'Modo claro'}
               >
                 {theme === 'light' ? (
