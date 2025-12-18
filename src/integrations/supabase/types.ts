@@ -308,6 +308,16 @@ export type Database = {
             }
             Returns: Json
           }
+      create_system_log: {
+        Args: {
+          p_action: string
+          p_details?: Json
+          p_entity_id?: string
+          p_entity_type?: string
+          p_user_id?: string
+        }
+        Returns: string
+      }
       get_my_unit_id: { Args: never; Returns: string }
       has_role: {
         Args: {
