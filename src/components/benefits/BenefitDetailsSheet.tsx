@@ -332,9 +332,9 @@ export function BenefitDetailsSheet({
 
             <Separator />
 
-            {/* Detalhes do benefício */}
+            {/* Detalhes do convênio */}
             <div className="space-y-3">
-              <h4 className="text-sm font-medium text-muted-foreground">Benefício</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">Convênio</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-muted-foreground">Tipo</p>
@@ -478,7 +478,7 @@ export function BenefitDetailsSheet({
                         onChange={(e) => setClosingMessage(e.target.value)}
                         placeholder={
                           isApproved
-                            ? "Seu benefício foi aprovado..."
+                            ? "Seu convênio foi aprovado..."
                             : "Sua solicitação foi analisada..."
                         }
                         rows={3}

@@ -208,7 +208,7 @@ export function BenefitDetailsDialog({
 
       // Enviar mensagem WhatsApp
       const whatsappMessage = `
-📦 *Sistema de Benefícios — Encerramento de Protocolo*
+📦 *Sistema de Convênios — Encerramento de Protocolo*
 
 🔹 *Protocolo:* ${request.protocol}
 ${pdfUrl ? `🧾 *Nota Fiscal:* ${pdfUrl}` : ""}
@@ -313,7 +313,7 @@ ${status === "recusada" && rejectionReason ? `\n❗ *Motivo:* ${rejectionReason}
               <p className="font-semibold">{request.profiles?.phone || "N/A"}</p>
             </div>
             <div>
-              <Label className="text-muted-foreground">Tipo de Benefício</Label>
+              <Label className="text-muted-foreground">Tipo de Convênio</Label>
               <p className="font-semibold">{benefitTypeLabels[request.benefit_type as keyof typeof benefitTypeLabels]}</p>
             </div>
             <div>
@@ -442,7 +442,7 @@ ${status === "recusada" && rejectionReason ? `\n❗ *Motivo:* ${rejectionReason}
                 onChange={(e) => setClosingMessage(e.target.value)}
                 placeholder={
                   isApproved
-                    ? "Seu benefício foi aprovado. Segue o comprovante para conferência."
+                    ? "Seu convênio foi aprovado. Segue o comprovante para conferência."
                     : "Sua solicitação foi analisada e não pôde ser aprovada."
                 }
                 rows={4}

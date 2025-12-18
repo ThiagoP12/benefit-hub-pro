@@ -19,7 +19,7 @@ import { NotificationsBell } from '@/components/notifications/NotificationsBell'
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Benefícios', href: '/solicitacoes', icon: FileText },
+  { name: 'Convênios', href: '/solicitacoes', icon: FileText },
   { name: 'Colaboradores', href: '/colaboradores', icon: Users },
   { name: 'Unidades', href: '/unidades', icon: Building2 },
   { name: 'WhatsApp', href: '/whatsapp', icon: MessageSquare, badge: 'Em Dev' },
@@ -49,7 +49,7 @@ export function Sidebar() {
           </div>
           <div className="min-w-0">
             <h1 className="text-lg font-semibold text-sidebar-foreground truncate">Revalle</h1>
-            <p className="text-xs text-sidebar-muted truncate">Gestão de Benefícios</p>
+            <p className="text-xs text-sidebar-muted truncate">Gestão de Convênios</p>
           </div>
         </div>
 
