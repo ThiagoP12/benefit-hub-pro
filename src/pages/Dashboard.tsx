@@ -8,6 +8,7 @@ import { ptBR } from 'date-fns/locale';
 import { BenefitTypeChart } from '@/components/dashboard/BenefitTypeChart';
 import { BenefitCategoryCards } from '@/components/dashboard/BenefitCategoryCards';
 import { RecentRequests } from '@/components/dashboard/RecentRequests';
+import { AgentPerformanceChart } from '@/components/dashboard/AgentPerformanceChart';
 import { DashboardFiltersComponent, DashboardFilters } from '@/components/dashboard/DashboardFilters';
 import { FileText, Clock, CheckCircle, XCircle, FolderOpen, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -220,6 +221,9 @@ export default function Dashboard() {
           <BenefitsChart data={monthlyData} />
           <BenefitTypeChart data={benefitTypeData} />
         </div>
+
+        {/* Agent Performance Chart */}
+        <AgentPerformanceChart />
 
         {/* Recent Requests */}
         <RecentRequests />
