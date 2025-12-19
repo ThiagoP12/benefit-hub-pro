@@ -122,17 +122,27 @@ export default function Colaboradores() {
       }
     }
 
-    // Combinar dados
-    const profilesWithRelations = allProfiles.map((profile) => {
-      const unit = unitsData?.find((u) => u.id === profile.unit_id);
-      const roles = allRoles?.filter((r) => r.user_id === profile.user_id) || [];
-      
-      return {
-        ...profile,
-        units: unit ? { name: unit.name } : null,
-        user_roles: roles,
-      };
-    });
+    // IDs de usuários com roles de sistema (não devem aparecer em Colaboradores)
+    const systemRoles = ['admin', 'gestor', 'agente_dp'];
+    const systemUserIds = new Set(
+      allRoles
+        .filter((r) => systemRoles.includes(r.role))
+        .map((r) => r.user_id)
+    );
+
+    // Combinar dados e filtrar usuários do sistema
+    const profilesWithRelations = allProfiles
+      .filter((profile) => !systemUserIds.has(profile.user_id)) // Excluir usuários do sistema
+      .map((profile) => {
+        const unit = unitsData?.find((u) => u.id === profile.unit_id);
+        const roles = allRoles?.filter((r) => r.user_id === profile.user_id) || [];
+        
+        return {
+          ...profile,
+          units: unit ? { name: unit.name } : null,
+          user_roles: roles,
+        };
+      });
 
     setProfiles(profilesWithRelations as unknown as Profile[]);
     setLoading(false);
