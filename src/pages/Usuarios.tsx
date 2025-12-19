@@ -37,7 +37,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Plus, Pencil, Trash2, Loader2, Search, UserCog } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Search, UserCog, KeyRound } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -74,8 +74,10 @@ export default function Usuarios() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
   const [formLoading, setFormLoading] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
 
   // Form state - only system roles (not colaborador)
   const [formData, setFormData] = useState({
@@ -231,22 +233,31 @@ export default function Usuarios() {
 
     setFormLoading(true);
     try {
-      // Delete profile (will cascade to user_roles due to FK)
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('user_id', selectedUser.user_id);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('Sessão expirada. Faça login novamente.');
+        return;
+      }
 
-      if (profileError) throw profileError;
+      const response = await fetch(
+        `https://wyhlezxtfhoolrvuqhfy.supabase.co/functions/v1/admin-user-management`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            action: 'delete',
+            userId: selectedUser.user_id,
+          }),
+        }
+      );
 
-      // Delete user role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', selectedUser.user_id);
+      const result = await response.json();
 
-      if (roleError) {
-        console.error('Error deleting role:', roleError);
+      if (!response.ok) {
+        throw new Error(result.error || 'Erro ao remover usuário');
       }
 
       toast.success('Usuário removido com sucesso!');
@@ -255,7 +266,57 @@ export default function Usuarios() {
       fetchUsers();
     } catch (error) {
       console.error('Error deleting user:', error);
-      toast.error('Erro ao remover usuário');
+      toast.error(error instanceof Error ? error.message : 'Erro ao remover usuário');
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!selectedUser || !newPassword) return;
+
+    if (newPassword.length < 6) {
+      toast.error('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
+    setFormLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('Sessão expirada. Faça login novamente.');
+        return;
+      }
+
+      const response = await fetch(
+        `https://wyhlezxtfhoolrvuqhfy.supabase.co/functions/v1/admin-user-management`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            action: 'changePassword',
+            userId: selectedUser.user_id,
+            newPassword: newPassword,
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Erro ao alterar senha');
+      }
+
+      toast.success('Senha alterada com sucesso!');
+      setIsPasswordDialogOpen(false);
+      setSelectedUser(null);
+      setNewPassword('');
+    } catch (error) {
+      console.error('Error changing password:', error);
+      toast.error(error instanceof Error ? error.message : 'Erro ao alterar senha');
     } finally {
       setFormLoading(false);
     }
@@ -270,6 +331,12 @@ export default function Usuarios() {
   const openDeleteDialog = (user: UserWithRole) => {
     setSelectedUser(user);
     setIsDeleteDialogOpen(true);
+  };
+
+  const openPasswordDialog = (user: UserWithRole) => {
+    setSelectedUser(user);
+    setNewPassword('');
+    setIsPasswordDialogOpen(true);
   };
 
   const filteredUsers = users.filter(
@@ -430,6 +497,14 @@ export default function Usuarios() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          onClick={() => openPasswordDialog(user)}
+                          title="Alterar senha"
+                        >
+                          <KeyRound className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => openEditDialog(user)}
                           title="Editar permissão"
                         >
@@ -519,6 +594,42 @@ export default function Usuarios() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Change Password Dialog */}
+        <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Alterar Senha</DialogTitle>
+              <DialogDescription>
+                Digite a nova senha para o usuário {selectedUser?.full_name}.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-password">Nova Senha</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Digite a nova senha (mínimo 6 caracteres)"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsPasswordDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button onClick={handleChangePassword} disabled={formLoading || newPassword.length < 6}>
+                {formLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Alterar Senha
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );

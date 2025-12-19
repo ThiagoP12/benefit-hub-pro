@@ -28,27 +28,40 @@ export function DeleteColaboradorDialog({ profileId, userId, name, onSuccess }: 
   const handleDelete = async () => {
     setLoading(true);
     try {
-      // First delete user roles (must be deleted before profile)
-      const { error: rolesError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
+      // Get auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('Sessão expirada. Faça login novamente.');
+        return;
+      }
 
-      if (rolesError) throw rolesError;
+      // Call edge function to delete user from auth.users (cascades to profiles and user_roles)
+      const response = await fetch(
+        `https://wyhlezxtfhoolrvuqhfy.supabase.co/functions/v1/admin-user-management`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            action: 'delete',
+            userId: userId,
+          }),
+        }
+      );
 
-      // Then delete profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', profileId);
+      const result = await response.json();
 
-      if (profileError) throw profileError;
+      if (!response.ok) {
+        throw new Error(result.error || 'Erro ao excluir colaborador');
+      }
 
       toast.success('Colaborador excluído com sucesso!');
       onSuccess?.();
     } catch (error) {
       console.error('Erro ao excluir colaborador:', error);
-      toast.error('Erro ao excluir colaborador');
+      toast.error(error instanceof Error ? error.message : 'Erro ao excluir colaborador');
     } finally {
       setLoading(false);
     }
