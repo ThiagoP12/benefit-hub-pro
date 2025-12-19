@@ -181,13 +181,15 @@ export default function Usuarios() {
         console.error('Error updating profile:', profileError);
       }
 
-      // Upsert user role to ensure it's set correctly
+      // Delete existing role (created by trigger with 'colaborador') and insert new one
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', authData.user.id);
+
       const { error: roleError } = await supabase
         .from('user_roles')
-        .upsert(
-          { user_id: authData.user.id, role: formData.role },
-          { onConflict: 'user_id' }
-        );
+        .insert({ user_id: authData.user.id, role: formData.role });
 
       if (roleError) {
         console.error('Error setting role:', roleError);
