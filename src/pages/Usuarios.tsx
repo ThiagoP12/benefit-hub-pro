@@ -145,55 +145,23 @@ export default function Usuarios() {
 
     setFormLoading(true);
     try {
-      // Create user in Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            full_name: formData.full_name,
-          },
+      const { data, error } = await supabase.functions.invoke('admin-user-management', {
+        body: {
+          action: 'create',
+          email: formData.email,
+          password: formData.password,
+          fullName: formData.full_name,
+          role: formData.role,
         },
       });
 
-      if (authError) {
-        if (authError.message.includes('already registered')) {
-          toast.error('Este email já está cadastrado');
-        } else {
-          toast.error(authError.message);
-        }
+      if (error) {
+        throw error;
+      }
+
+      if (!data?.success) {
+        toast.error(data?.error || 'Erro ao criar usuário');
         return;
-      }
-
-      if (!authData.user) {
-        toast.error('Erro ao criar usuário');
-        return;
-      }
-
-      // Update the profile with full_name
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ full_name: formData.full_name })
-        .eq('user_id', authData.user.id);
-
-      if (profileError) {
-        console.error('Error updating profile:', profileError);
-      }
-
-      // Delete existing role (created by trigger with 'colaborador') and insert new one
-      await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', authData.user.id);
-
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({ user_id: authData.user.id, role: formData.role });
-
-      if (roleError) {
-        console.error('Error setting role:', roleError);
-        toast.error('Usuário criado, mas erro ao definir permissão');
       }
 
       toast.success('Usuário criado com sucesso!');
@@ -202,7 +170,8 @@ export default function Usuarios() {
       fetchUsers();
     } catch (error) {
       console.error('Error creating user:', error);
-      toast.error('Erro ao criar usuário');
+      const message = error instanceof Error ? error.message : 'Erro ao criar usuário';
+      toast.error(message);
     } finally {
       setFormLoading(false);
     }
@@ -237,31 +206,17 @@ export default function Usuarios() {
 
     setFormLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error('Sessão expirada. Faça login novamente.');
-        return;
-      }
+      const { data, error } = await supabase.functions.invoke('admin-user-management', {
+        body: {
+          action: 'delete',
+          userId: selectedUser.user_id,
+        },
+      });
 
-      const response = await fetch(
-        `https://wyhlezxtfhoolrvuqhfy.supabase.co/functions/v1/admin-user-management`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({
-            action: 'delete',
-            userId: selectedUser.user_id,
-          }),
-        }
-      );
+      if (error) throw error;
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Erro ao remover usuário');
+      if (!data?.success) {
+        throw new Error(data?.error || 'Erro ao remover usuário');
       }
 
       toast.success('Usuário removido com sucesso!');
@@ -286,32 +241,18 @@ export default function Usuarios() {
 
     setFormLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error('Sessão expirada. Faça login novamente.');
-        return;
-      }
+      const { data, error } = await supabase.functions.invoke('admin-user-management', {
+        body: {
+          action: 'changePassword',
+          userId: selectedUser.user_id,
+          newPassword,
+        },
+      });
 
-      const response = await fetch(
-        `https://wyhlezxtfhoolrvuqhfy.supabase.co/functions/v1/admin-user-management`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({
-            action: 'changePassword',
-            userId: selectedUser.user_id,
-            newPassword: newPassword,
-          }),
-        }
-      );
+      if (error) throw error;
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Erro ao alterar senha');
+      if (!data?.success) {
+        throw new Error(data?.error || 'Erro ao alterar senha');
       }
 
       toast.success('Senha alterada com sucesso!');
