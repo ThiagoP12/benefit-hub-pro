@@ -181,14 +181,16 @@ export default function Usuarios() {
         console.error('Error updating profile:', profileError);
       }
 
-      // Update user role (always update since we don't allow colaborador here)
+      // Upsert user role to ensure it's set correctly
       const { error: roleError } = await supabase
         .from('user_roles')
-        .update({ role: formData.role })
-        .eq('user_id', authData.user.id);
+        .upsert(
+          { user_id: authData.user.id, role: formData.role },
+          { onConflict: 'user_id' }
+        );
 
       if (roleError) {
-        console.error('Error updating role:', roleError);
+        console.error('Error setting role:', roleError);
         toast.error('Usuário criado, mas erro ao definir permissão');
       }
 
