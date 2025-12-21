@@ -1,17 +1,33 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { UserCheck, Loader2 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LabelList } from 'recharts';
+import { UserCheck, Loader2, CheckCircle, XCircle, TrendingUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface AgentData {
   name: string;
+  initials: string;
   atendidas: number;
   aprovadas: number;
   recusadas: number;
 }
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+const GRADIENTS = [
+  { start: 'hsl(var(--primary))', end: 'hsl(var(--primary) / 0.7)' },
+  { start: 'hsl(var(--chart-2))', end: 'hsl(var(--chart-2) / 0.7)' },
+  { start: 'hsl(var(--chart-3))', end: 'hsl(var(--chart-3) / 0.7)' },
+  { start: 'hsl(var(--chart-4))', end: 'hsl(var(--chart-4) / 0.7)' },
+  { start: 'hsl(var(--chart-5))', end: 'hsl(var(--chart-5) / 0.7)' },
+];
+
+const AVATAR_COLORS = [
+  'bg-primary text-primary-foreground',
+  'bg-chart-2 text-white',
+  'bg-chart-3 text-white',
+  'bg-chart-4 text-white',
+  'bg-chart-5 text-white',
+];
 
 export function AgentPerformanceChart() {
   const [data, setData] = useState<AgentData[]>([]);
@@ -23,7 +39,6 @@ export function AgentPerformanceChart() {
 
   const fetchAgentData = async () => {
     try {
-      // Buscar solicitações que têm reviewed_by (foram atendidas por alguém)
       const { data: requests, error: requestsError } = await supabase
         .from('benefit_requests')
         .select('reviewed_by, status')
@@ -41,7 +56,6 @@ export function AgentPerformanceChart() {
         return;
       }
 
-      // Agrupar por reviewed_by
       const agentMap = new Map<string, { atendidas: number; aprovadas: number; recusadas: number }>();
       
       requests.forEach((req) => {
@@ -59,7 +73,6 @@ export function AgentPerformanceChart() {
         agentMap.set(req.reviewed_by, current);
       });
 
-      // Buscar nomes dos agentes
       const agentIds = Array.from(agentMap.keys());
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
@@ -72,14 +85,19 @@ export function AgentPerformanceChart() {
 
       const profileMap = new Map(profiles?.map(p => [p.user_id, p.full_name]) || []);
 
-      // Montar dados para o gráfico
       const chartData: AgentData[] = Array.from(agentMap.entries())
-        .map(([userId, stats]) => ({
-          name: profileMap.get(userId)?.split(' ')[0] || 'Desconhecido', // Primeiro nome apenas
-          ...stats,
-        }))
-        .sort((a, b) => b.atendidas - a.atendidas) // Ordenar por mais atendimentos
-        .slice(0, 10); // Top 10
+        .map(([userId, stats]) => {
+          const fullName = profileMap.get(userId) || 'Desconhecido';
+          const nameParts = fullName.split(' ');
+          const initials = nameParts.map(n => n[0]).join('').slice(0, 2).toUpperCase();
+          return {
+            name: nameParts[0],
+            initials,
+            ...stats,
+          };
+        })
+        .sort((a, b) => b.atendidas - a.atendidas)
+        .slice(0, 5);
 
       setData(chartData);
     } catch (error) {
@@ -89,16 +107,22 @@ export function AgentPerformanceChart() {
     }
   };
 
+  const totalAtendidas = data.reduce((sum, d) => sum + d.atendidas, 0);
+  const totalAprovadas = data.reduce((sum, d) => sum + d.aprovadas, 0);
+  const totalRecusadas = data.reduce((sum, d) => sum + d.recusadas, 0);
+
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base">
-            <UserCheck className="h-5 w-5 text-primary" />
-            Atendimentos por Agente
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+              <UserCheck className="h-4 w-4 text-primary" />
+            </div>
+            Desempenho por Agente
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center justify-center h-[300px]">
+        <CardContent className="flex items-center justify-center h-[320px]">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </CardContent>
       </Card>
@@ -107,87 +131,103 @@ export function AgentPerformanceChart() {
 
   if (data.length === 0) {
     return (
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base">
-            <UserCheck className="h-5 w-5 text-primary" />
-            Atendimentos por Agente
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+              <UserCheck className="h-4 w-4 text-primary" />
+            </div>
+            Desempenho por Agente
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center justify-center h-[300px]">
-          <p className="text-muted-foreground text-sm">Nenhum atendimento registrado</p>
+        <CardContent className="flex items-center justify-center h-[320px]">
+          <div className="text-center">
+            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
+              <TrendingUp className="h-8 w-8 text-muted-foreground/50" />
+            </div>
+            <p className="text-muted-foreground text-sm font-medium">Nenhum atendimento registrado</p>
+            <p className="text-xs text-muted-foreground mt-1">Os dados aparecerão aqui após os primeiros atendimentos</p>
+          </div>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
-          <UserCheck className="h-5 w-5 text-primary" />
-          Atendimentos por Agente
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+            <UserCheck className="h-4 w-4 text-primary" />
+          </div>
+          Desempenho por Agente
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-            <XAxis type="number" className="text-xs fill-muted-foreground" />
-            <YAxis 
-              type="category" 
-              dataKey="name" 
-              className="text-xs fill-muted-foreground"
-              width={80}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'hsl(var(--card))',
-                borderColor: 'hsl(var(--border))',
-                borderRadius: '8px',
-              }}
-              labelStyle={{ color: 'hsl(var(--foreground))' }}
-              formatter={(value: number, name: string) => {
-                const labels: Record<string, string> = {
-                  atendidas: 'Total Atendidas',
-                  aprovadas: 'Aprovadas',
-                  recusadas: 'Recusadas',
-                };
-                return [value, labels[name] || name];
-              }}
-            />
-            <Bar 
-              dataKey="atendidas" 
-              fill="hsl(var(--primary))" 
-              radius={[0, 4, 4, 0]}
-              name="atendidas"
-            >
-              {data.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+      <CardContent className="pt-4">
+        {/* Agent List with Bars */}
+        <div className="space-y-4">
+          {data.map((agent, index) => {
+            const percentage = totalAtendidas > 0 ? (agent.atendidas / totalAtendidas) * 100 : 0;
+            const colorClass = AVATAR_COLORS[index % AVATAR_COLORS.length];
+            
+            return (
+              <div key={agent.name} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold shadow-sm",
+                      colorClass
+                    )}>
+                      {agent.initials}
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm text-foreground">{agent.name}</p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <CheckCircle className="h-3 w-3 text-success" />
+                          {agent.aprovadas}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <XCircle className="h-3 w-3 text-destructive" />
+                          {agent.recusadas}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-foreground">{agent.atendidas}</p>
+                    <p className="text-xs text-muted-foreground">{percentage.toFixed(0)}%</p>
+                  </div>
+                </div>
+                
+                {/* Progress Bar */}
+                <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <div 
+                    className="h-full rounded-full transition-all duration-500 ease-out"
+                    style={{ 
+                      width: `${percentage}%`,
+                      background: `linear-gradient(90deg, ${GRADIENTS[index % GRADIENTS.length].start}, ${GRADIENTS[index % GRADIENTS.length].end})`
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
-        {/* Legenda com totais */}
-        <div className="mt-4 grid grid-cols-3 gap-4 text-center border-t pt-4">
-          <div>
-            <p className="text-2xl font-bold text-foreground">
-              {data.reduce((sum, d) => sum + d.atendidas, 0)}
-            </p>
-            <p className="text-xs text-muted-foreground">Total Atendidas</p>
+        {/* Summary Stats */}
+        <div className="mt-6 grid grid-cols-3 gap-3 pt-4 border-t border-border">
+          <div className="text-center p-3 rounded-lg bg-muted/50">
+            <p className="text-2xl font-bold text-foreground">{totalAtendidas}</p>
+            <p className="text-xs text-muted-foreground font-medium">Total</p>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-success">
-              {data.reduce((sum, d) => sum + d.aprovadas, 0)}
-            </p>
-            <p className="text-xs text-muted-foreground">Aprovadas</p>
+          <div className="text-center p-3 rounded-lg bg-success/10">
+            <p className="text-2xl font-bold text-success">{totalAprovadas}</p>
+            <p className="text-xs text-muted-foreground font-medium">Aprovadas</p>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-destructive">
-              {data.reduce((sum, d) => sum + d.recusadas, 0)}
-            </p>
-            <p className="text-xs text-muted-foreground">Recusadas</p>
+          <div className="text-center p-3 rounded-lg bg-destructive/10">
+            <p className="text-2xl font-bold text-destructive">{totalRecusadas}</p>
+            <p className="text-xs text-muted-foreground font-medium">Recusadas</p>
           </div>
         </div>
       </CardContent>

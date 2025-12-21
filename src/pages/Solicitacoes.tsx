@@ -423,7 +423,9 @@ export default function Solicitacoes() {
   };
 
   const handleStatusFilterChange = (value: string) => {
-    setStatusFilter(value);
+    // When selecting 'aprovada', also include 'concluida'
+    const filterValue = value === 'aprovada' ? 'aprovada,concluida' : value;
+    setStatusFilter(filterValue);
     setCurrentPage(1);
     // Update URL params
     if (value === 'all') {
@@ -653,7 +655,7 @@ export default function Solicitacoes() {
                         idx % 2 === 1 && "bg-muted/30"
                       )}
                     >
-                      <TableCell className="font-mono text-sm text-info">{request.protocol}</TableCell>
+                      <TableCell className="font-mono text-sm font-bold text-foreground">{request.protocol}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className={cn(
