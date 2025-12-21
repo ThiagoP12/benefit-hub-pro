@@ -26,7 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Search, Filter, Download, Eye, Calendar as CalendarIcon, ArrowUpDown, Eraser, Clock, Car, Pill, Wrench, Flame, BookOpen, Glasses, HelpCircle } from 'lucide-react';
+import { Search, Filter, Download, Eye, Calendar as CalendarIcon, ArrowUpDown, Eraser, Clock, Car, Pill, Wrench, Cylinder, BookOpen, Glasses, HelpCircle } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
@@ -62,7 +62,7 @@ const benefitTypeConfig: Record<BenefitType, { icon: React.ElementType; colorCla
   autoescola: { icon: Car, colorClass: 'bg-[hsl(var(--benefit-autoescola))] text-[hsl(var(--benefit-autoescola-icon))]' },
   farmacia: { icon: Pill, colorClass: 'bg-[hsl(var(--benefit-farmacia))] text-[hsl(var(--benefit-farmacia-icon))]' },
   oficina: { icon: Wrench, colorClass: 'bg-[hsl(var(--benefit-oficina))] text-[hsl(var(--benefit-oficina-icon))]' },
-  vale_gas: { icon: Flame, colorClass: 'bg-[hsl(var(--benefit-vale-gas))] text-[hsl(var(--benefit-vale-gas-icon))]' },
+  vale_gas: { icon: Cylinder, colorClass: 'bg-[hsl(var(--benefit-vale-gas))] text-[hsl(var(--benefit-vale-gas-icon))]' },
   papelaria: { icon: BookOpen, colorClass: 'bg-[hsl(var(--benefit-papelaria))] text-[hsl(var(--benefit-papelaria-icon))]' },
   otica: { icon: Glasses, colorClass: 'bg-[hsl(var(--benefit-otica))] text-[hsl(var(--benefit-otica-icon))]' },
   outros: { icon: HelpCircle, colorClass: 'bg-muted text-muted-foreground' },
@@ -653,7 +653,7 @@ export default function Solicitacoes() {
                         idx % 2 === 1 && "bg-muted/30"
                       )}
                     >
-                      <TableCell className="font-mono text-sm text-primary">{request.protocol}</TableCell>
+                      <TableCell className="font-mono text-sm text-info">{request.protocol}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className={cn(

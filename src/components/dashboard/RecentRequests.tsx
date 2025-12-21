@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { StatusBadge } from '@/components/ui/status-badge';
-import { ArrowRight, Eye, Clock, Car, Pill, Wrench, Flame, BookOpen, Glasses, HelpCircle } from 'lucide-react';
+import { ArrowRight, Eye, Clock, Car, Pill, Wrench, Cylinder, BookOpen, Glasses, HelpCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ const benefitTypeConfig: Record<BenefitType, { icon: React.ElementType; colorCla
   autoescola: { icon: Car, colorClass: 'bg-[hsl(var(--benefit-autoescola))] text-[hsl(var(--benefit-autoescola-icon))]' },
   farmacia: { icon: Pill, colorClass: 'bg-[hsl(var(--benefit-farmacia))] text-[hsl(var(--benefit-farmacia-icon))]' },
   oficina: { icon: Wrench, colorClass: 'bg-[hsl(var(--benefit-oficina))] text-[hsl(var(--benefit-oficina-icon))]' },
-  vale_gas: { icon: Flame, colorClass: 'bg-[hsl(var(--benefit-vale-gas))] text-[hsl(var(--benefit-vale-gas-icon))]' },
+  vale_gas: { icon: Cylinder, colorClass: 'bg-[hsl(var(--benefit-vale-gas))] text-[hsl(var(--benefit-vale-gas-icon))]' },
   papelaria: { icon: BookOpen, colorClass: 'bg-[hsl(var(--benefit-papelaria))] text-[hsl(var(--benefit-papelaria-icon))]' },
   otica: { icon: Glasses, colorClass: 'bg-[hsl(var(--benefit-otica))] text-[hsl(var(--benefit-otica-icon))]' },
   outros: { icon: HelpCircle, colorClass: 'bg-muted text-muted-foreground' },
@@ -177,7 +177,7 @@ export function RecentRequests() {
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-semibold text-foreground truncate">{request.full_name}</p>
                   <span className="text-xs text-muted-foreground hidden sm:inline">•</span>
-                  <span className="text-xs text-muted-foreground font-mono hidden sm:inline">{request.protocol}</span>
+                  <span className="text-xs text-info font-mono hidden sm:inline">{request.protocol}</span>
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                   <span className={cn(
