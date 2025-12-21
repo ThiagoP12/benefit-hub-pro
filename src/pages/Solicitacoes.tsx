@@ -26,7 +26,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Search, Filter, Download, Eye, Calendar, ArrowUpDown, Eraser, Clock } from 'lucide-react';
+import { Search, Filter, Download, Eye, Calendar as CalendarIcon, ArrowUpDown, Eraser, Clock } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -65,8 +70,8 @@ export default function Solicitacoes() {
   });
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [unitFilter, setUnitFilter] = useState<string>('all');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [units, setUnits] = useState<Unit[]>([]);
   const [requests, setRequests] = useState<BenefitRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -194,13 +199,18 @@ export default function Solicitacoes() {
       let matchesEndDate = true;
       
       if (startDate || endDate) {
-        // Use toLocaleDateString with sv-SE locale for YYYY-MM-DD format in local timezone
-        const requestDateOnly = new Date(request.created_at).toLocaleDateString('sv-SE');
+        const requestDate = new Date(request.created_at);
+        requestDate.setHours(0, 0, 0, 0);
+        
         if (startDate) {
-          matchesStartDate = requestDateOnly >= startDate;
+          const start = new Date(startDate);
+          start.setHours(0, 0, 0, 0);
+          matchesStartDate = requestDate >= start;
         }
         if (endDate) {
-          matchesEndDate = requestDateOnly <= endDate;
+          const end = new Date(endDate);
+          end.setHours(23, 59, 59, 999);
+          matchesEndDate = requestDate <= end;
         }
       }
 
@@ -363,8 +373,8 @@ export default function Solicitacoes() {
     setStatusFilter('all');
     setTypeFilter('all');
     setUnitFilter('all');
-    setStartDate('');
-    setEndDate('');
+    setStartDate(undefined);
+    setEndDate(undefined);
     setCurrentPage(1);
     // Clear URL params
     setSearchParams({});
@@ -469,18 +479,56 @@ export default function Solicitacoes() {
 
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Data Inicial</Label>
-              <div className="relative">
-                <Calendar className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground shrink-0" />
-                <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="pl-8 h-9" />
-              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "h-9 w-full justify-start text-left font-normal",
+                      !startDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-3.5 w-3.5 shrink-0" />
+                    {startDate ? format(startDate, "dd/MM/yyyy", { locale: ptBR }) : <span>Selecionar</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={setStartDate}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Data Final</Label>
-              <div className="relative">
-                <Calendar className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground shrink-0" />
-                <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="pl-8 h-9" />
-              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "h-9 w-full justify-start text-left font-normal",
+                      !endDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-3.5 w-3.5 shrink-0" />
+                    {endDate ? format(endDate, "dd/MM/yyyy", { locale: ptBR }) : <span>Selecionar</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={setEndDate}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="space-y-1.5">
