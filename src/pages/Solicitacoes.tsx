@@ -193,14 +193,15 @@ export default function Solicitacoes() {
       let matchesStartDate = true;
       let matchesEndDate = true;
       
-      if (startDate) {
-        const requestDateOnly = new Date(request.created_at).toISOString().split('T')[0];
-        matchesStartDate = requestDateOnly >= startDate;
-      }
-      
-      if (endDate) {
-        const requestDateOnly = new Date(request.created_at).toISOString().split('T')[0];
-        matchesEndDate = requestDateOnly <= endDate;
+      if (startDate || endDate) {
+        // Use toLocaleDateString with sv-SE locale for YYYY-MM-DD format in local timezone
+        const requestDateOnly = new Date(request.created_at).toLocaleDateString('sv-SE');
+        if (startDate) {
+          matchesStartDate = requestDateOnly >= startDate;
+        }
+        if (endDate) {
+          matchesEndDate = requestDateOnly <= endDate;
+        }
       }
 
       return matchesStatus && matchesType && matchesUnit && matchesStartDate && matchesEndDate;
