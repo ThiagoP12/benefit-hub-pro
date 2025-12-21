@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { benefitTypeLabels } from '@/types/benefits';
 import { StatusBadge } from '@/components/ui/status-badge';
-import { ArrowRight, Eye } from 'lucide-react';
+import { ArrowRight, Eye, Clock, Car, Pill, Wrench, Flame, BookOpen, Glasses, HelpCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { benefitTypeLabels } from '@/types/benefits';
 import type { BenefitStatus, BenefitType } from '@/types/benefits';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 interface RecentRequest {
   id: string;
@@ -18,6 +21,30 @@ interface RecentRequest {
   full_name?: string;
 }
 
+const benefitTypeConfig: Record<BenefitType, { icon: React.ElementType; colorClass: string }> = {
+  autoescola: { icon: Car, colorClass: 'bg-[hsl(var(--benefit-autoescola))] text-[hsl(var(--benefit-autoescola-icon))]' },
+  farmacia: { icon: Pill, colorClass: 'bg-[hsl(var(--benefit-farmacia))] text-[hsl(var(--benefit-farmacia-icon))]' },
+  oficina: { icon: Wrench, colorClass: 'bg-[hsl(var(--benefit-oficina))] text-[hsl(var(--benefit-oficina-icon))]' },
+  vale_gas: { icon: Flame, colorClass: 'bg-[hsl(var(--benefit-vale-gas))] text-[hsl(var(--benefit-vale-gas-icon))]' },
+  papelaria: { icon: BookOpen, colorClass: 'bg-[hsl(var(--benefit-papelaria))] text-[hsl(var(--benefit-papelaria-icon))]' },
+  otica: { icon: Glasses, colorClass: 'bg-[hsl(var(--benefit-otica))] text-[hsl(var(--benefit-otica-icon))]' },
+  outros: { icon: HelpCircle, colorClass: 'bg-muted text-muted-foreground' },
+};
+
+function getSlaStatus(createdAt: string): { colorClass: string; label: string } {
+  const now = new Date();
+  const created = new Date(createdAt);
+  const diffHours = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
+  
+  if (diffHours < 2) {
+    return { colorClass: 'bg-success', label: 'No prazo' };
+  } else if (diffHours < 6) {
+    return { colorClass: 'bg-warning', label: 'Atenção' };
+  } else {
+    return { colorClass: 'bg-destructive', label: 'Atrasado' };
+  }
+}
+
 export function RecentRequests() {
   const navigate = useNavigate();
   const [requests, setRequests] = useState<RecentRequest[]>([]);
@@ -26,7 +53,6 @@ export function RecentRequests() {
   useEffect(() => {
     const fetchRecentRequests = async () => {
       try {
-        // Fetch benefit requests
         const { data: requestsData, error: requestsError } = await supabase
           .from('benefit_requests')
           .select('id, protocol, benefit_type, status, created_at, user_id')
@@ -45,7 +71,6 @@ export function RecentRequests() {
           return;
         }
 
-        // Fetch profiles separately
         const userIds = [...new Set(requestsData.map(r => r.user_id))];
         const { data: profilesData } = await supabase
           .from('profiles')
@@ -54,7 +79,6 @@ export function RecentRequests() {
 
         const profilesMap = new Map(profilesData?.map(p => [p.user_id, p.full_name]) || []);
 
-        // Merge data
         const mergedData = requestsData.map(req => ({
           ...req,
           full_name: profilesMap.get(req.user_id) || 'Usuário'
@@ -70,23 +94,25 @@ export function RecentRequests() {
     fetchRecentRequests();
   }, []);
 
+  const handleViewProtocol = (protocolId: string) => {
+    navigate(`/solicitacoes?protocol=${protocolId}`);
+  };
+
   if (loading) {
     return (
-      <div className="rounded-xl border border-border bg-card animate-slide-up" style={{ animationDelay: '200ms' }}>
+      <div className="rounded-xl border border-border bg-card animate-slide-up overflow-hidden" style={{ animationDelay: '200ms' }}>
         <div className="p-4 sm:p-6 border-b border-border">
           <Skeleton className="h-5 sm:h-6 w-40 sm:w-48" />
         </div>
         <div className="divide-y divide-border">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex items-center justify-between p-3 sm:p-4">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <Skeleton className="h-8 w-8 sm:h-10 sm:w-10 rounded-full" />
-                <div>
-                  <Skeleton className="h-3 sm:h-4 w-24 sm:w-32 mb-1.5 sm:mb-2" />
-                  <Skeleton className="h-2.5 sm:h-3 w-32 sm:w-48" />
-                </div>
+            <div key={i} className={cn("flex items-center gap-4 p-4", i % 2 === 1 && "bg-muted/30")}>
+              <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-24" />
               </div>
-              <Skeleton className="h-5 sm:h-6 w-16 sm:w-20" />
+              <Skeleton className="h-6 w-20" />
             </div>
           ))}
         </div>
@@ -94,68 +120,105 @@ export function RecentRequests() {
     );
   }
 
-  const handleViewProtocol = (protocolId: string) => {
-    navigate(`/solicitacoes?protocol=${protocolId}`);
-  };
-
   if (requests.length === 0) {
     return (
       <div className="rounded-xl border border-border bg-card animate-slide-up" style={{ animationDelay: '200ms' }}>
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
           <h3 className="text-base sm:text-lg font-semibold text-foreground">Protocolos Recentes</h3>
         </div>
-        <div className="p-6 sm:p-8 text-center text-muted-foreground text-sm">
-          Nenhum protocolo recente encontrado
+        <div className="p-8 flex flex-col items-center justify-center text-muted-foreground">
+          <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-3">
+            <Clock className="h-8 w-8 opacity-50" />
+          </div>
+          <p className="text-sm font-medium">Nenhum protocolo recente</p>
+          <p className="text-xs mt-1">Os novos protocolos aparecerão aqui</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card animate-slide-up" style={{ animationDelay: '200ms' }}>
+    <div className="rounded-xl border border-border bg-card animate-slide-up overflow-hidden" style={{ animationDelay: '200ms' }}>
       <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
         <h3 className="text-base sm:text-lg font-semibold text-foreground">Protocolos Recentes</h3>
         <Link 
           to="/solicitacoes" 
-          className="flex items-center gap-1 text-xs sm:text-sm font-medium text-primary hover:text-primary/80 transition-colors shrink-0"
+          className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-primary hover:text-primary/80 transition-colors shrink-0"
         >
-          <span className="hidden sm:inline">Ver todos</span>
-          <span className="sm:hidden">Ver</span>
-          <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+          Ver todos
+          <ArrowRight className="h-4 w-4 shrink-0" />
         </Link>
       </div>
       <div className="divide-y divide-border">
-        {requests.map((request) => (
-          <div key={request.id} className="flex items-center justify-between p-3 sm:p-4 hover:bg-muted/50 transition-colors gap-3 sm:gap-4">
-            <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 flex-1">
-              <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-semibold">
-                {request.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2) || '??'}
+        {requests.map((request, index) => {
+          const config = benefitTypeConfig[request.benefit_type];
+          const Icon = config.icon;
+          const sla = getSlaStatus(request.created_at);
+          const isOpenStatus = request.status === 'aberta' || request.status === 'em_analise';
+          
+          return (
+            <div 
+              key={request.id} 
+              className={cn(
+                "flex items-center gap-3 sm:gap-4 p-3 sm:p-4 transition-all duration-200 hover:bg-accent/50 group",
+                index % 2 === 1 && "bg-muted/30"
+              )}
+            >
+              {/* Benefit Type Icon */}
+              <div className={cn(
+                "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-transform group-hover:scale-105",
+                config.colorClass
+              )}>
+                <Icon className="h-5 w-5" />
               </div>
+              
+              {/* Info */}
               <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm font-medium text-foreground truncate">{request.full_name}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                  <span className="hidden sm:inline">{request.protocol} • </span>
-                  {benefitTypeLabels[request.benefit_type]}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-foreground truncate">{request.full_name}</p>
+                  <span className="text-xs text-muted-foreground hidden sm:inline">•</span>
+                  <span className="text-xs text-muted-foreground font-mono hidden sm:inline">{request.protocol}</span>
+                </div>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className={cn(
+                    "text-xs font-medium px-1.5 py-0.5 rounded",
+                    config.colorClass
+                  )}>
+                    {benefitTypeLabels[request.benefit_type]}
+                  </span>
+                  <span className="text-xs text-muted-foreground hidden sm:inline">
+                    {formatDistanceToNow(new Date(request.created_at), {
+                      addSuffix: true,
+                      locale: ptBR,
+                    })}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-              <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap hidden md:block">
-                {new Date(request.created_at).toLocaleDateString('pt-BR')}
-              </span>
-              <StatusBadge status={request.status} />
+              
+              {/* SLA Indicator (only for open statuses) */}
+              {isOpenStatus && (
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <div className={cn("h-2 w-2 rounded-full", sla.colorClass)} />
+                  <span className="text-xs text-muted-foreground hidden md:inline">{sla.label}</span>
+                </div>
+              )}
+              
+              {/* Status */}
+              <StatusBadge status={request.status} className="shrink-0 hidden sm:flex" />
+              
+              {/* Action Button */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 hover:bg-primary/10 hover:text-primary"
+                className="h-8 w-8 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity hover:bg-primary/10 hover:text-primary"
                 onClick={() => handleViewProtocol(request.id)}
                 title="Ver detalhes"
               >
-                <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <Eye className="h-4 w-4" />
               </Button>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

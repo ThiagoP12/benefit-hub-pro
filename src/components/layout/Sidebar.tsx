@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth, AppRole } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
   FileText,
@@ -17,6 +18,7 @@ import {
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { NotificationsBell } from '@/components/notifications/NotificationsBell';
+import { supabase } from '@/integrations/supabase/client';
 import revalleLogo from '@/assets/revalle-logo.png';
 
 interface NavItem {
@@ -24,6 +26,7 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
+  showOpenCount?: boolean;
   allowedRoles: AppRole[];
 }
 
@@ -38,6 +41,7 @@ const navigation: NavItem[] = [
     name: 'Protocolos', 
     href: '/solicitacoes', 
     icon: FileText,
+    showOpenCount: true,
     allowedRoles: ['admin', 'gestor', 'agente_dp']
   },
   { 
@@ -85,6 +89,36 @@ export function Sidebar() {
   const location = useLocation();
   const { userName, userRole, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const [openProtocolsCount, setOpenProtocolsCount] = useState(0);
+
+  useEffect(() => {
+    const fetchOpenProtocolsCount = async () => {
+      const { count, error } = await supabase
+        .from('benefit_requests')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['aberta', 'em_analise']);
+      
+      if (!error && count !== null) {
+        setOpenProtocolsCount(count);
+      }
+    };
+
+    fetchOpenProtocolsCount();
+
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('open-protocols-count')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'benefit_requests' },
+        () => fetchOpenProtocolsCount()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const handleSignOut = async () => {
     await logout();
@@ -132,6 +166,11 @@ export function Sidebar() {
               >
                 <item.icon className="h-5 w-5 shrink-0" />
                 <span className="flex-1 truncate">{item.name}</span>
+                {item.showOpenCount && openProtocolsCount > 0 && (
+                  <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-primary/20 text-primary border border-primary/30">
+                    {openProtocolsCount}
+                  </span>
+                )}
                 {item.badge && (
                   <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-warning/20 text-warning border border-warning/30">
                     {item.badge}
