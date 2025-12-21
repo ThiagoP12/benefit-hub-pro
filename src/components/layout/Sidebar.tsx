@@ -35,7 +35,7 @@ const navigation: NavItem[] = [
     allowedRoles: ['admin', 'gestor', 'agente_dp']
   },
   { 
-    name: 'Convênios', 
+    name: 'Protocolos', 
     href: '/solicitacoes', 
     icon: FileText,
     allowedRoles: ['admin', 'gestor', 'agente_dp']
@@ -111,7 +111,7 @@ export function Sidebar() {
           </div>
           <div className="min-w-0">
             <h1 className="text-lg font-semibold text-sidebar-foreground truncate">Revalle</h1>
-            <p className="text-xs text-sidebar-muted truncate">Gestão de Convênios</p>
+            <p className="text-xs text-sidebar-muted truncate">Gestão de Protocolos</p>
           </div>
         </div>
 

@@ -30,8 +30,16 @@ const statusLabels: Record<BenefitStatus, string> = {
   em_analise: 'Em Análise',
   aprovada: 'Aprovada',
   recusada: 'Recusada',
-  concluida: 'Aprovada', // Concluída é exibida como Aprovada
+  concluida: 'Concluída',
 };
+
+// Labels para exibição no filtro (sem duplicação)
+const statusFilterOptions: { value: string; label: string }[] = [
+  { value: 'aberta', label: 'Aberta' },
+  { value: 'em_analise', label: 'Em Análise' },
+  { value: 'aprovada_concluida', label: 'Aprovada' },
+  { value: 'recusada', label: 'Recusada' },
+];
 
 interface ColaboradorHistorySheetProps {
   open: boolean;
@@ -54,7 +62,12 @@ export function ColaboradorHistorySheet({
 
   const filteredRequests = useMemo(() => {
     return requests.filter((req) => {
-      const matchesStatus = statusFilter === 'all' || req.status === statusFilter;
+      let matchesStatus = statusFilter === 'all';
+      if (statusFilter === 'aprovada_concluida') {
+        matchesStatus = req.status === 'aprovada' || req.status === 'concluida';
+      } else if (statusFilter !== 'all') {
+        matchesStatus = req.status === statusFilter;
+      }
       const matchesType = typeFilter === 'all' || req.benefit_type === typeFilter;
       return matchesStatus && matchesType;
     });
@@ -168,8 +181,8 @@ export function ColaboradorHistorySheet({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos os status</SelectItem>
-                    {Object.entries(statusLabels).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    {statusFilterOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

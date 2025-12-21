@@ -202,7 +202,7 @@ export default function Dashboard() {
             value={stats.aprovados}
             icon={CheckCircle}
             variant="success"
-            onClick={() => navigate('/solicitacoes?status=aprovada')}
+            onClick={() => navigate('/solicitacoes?status=aprovada,concluida')}
           />
           <StatCard
             title="Reprovadas"

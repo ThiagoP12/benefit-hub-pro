@@ -85,6 +85,20 @@ export default function Solicitacoes() {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [pendingViewRequest, setPendingViewRequest] = useState<{ id: string; index: number } | null>(null);
 
+  // Abrir protocolo específico quando receber parâmetro protocol na URL
+  useEffect(() => {
+    const protocolId = searchParams.get('protocol');
+    if (protocolId && !loading && requests.length > 0) {
+      const index = requests.findIndex(r => r.id === protocolId);
+      if (index !== -1) {
+        handleViewDetails(protocolId, index);
+        // Limpar o parâmetro da URL
+        searchParams.delete('protocol');
+        setSearchParams(searchParams, { replace: true });
+      }
+    }
+  }, [searchParams, loading, requests]);
+
   useEffect(() => {
     fetchRequests();
     fetchUnits();
@@ -190,10 +204,14 @@ export default function Solicitacoes() {
         if (!matchesSearch) return false;
       }
 
-      const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
+      // Suportar múltiplos status separados por vírgula (ex: ?status=aprovada,concluida)
+      let matchesStatus = statusFilter === 'all';
+      if (!matchesStatus) {
+        const statuses = statusFilter.split(',');
+        matchesStatus = statuses.includes(request.status);
+      }
       const matchesType = typeFilter === 'all' || request.benefit_type === typeFilter;
       const matchesUnit = unitFilter === 'all' || request.profiles?.unit_id === unitFilter;
-
       // Fix date filtering - parse the date string properly and compare dates only
       let matchesStartDate = true;
       let matchesEndDate = true;
@@ -410,9 +428,9 @@ export default function Solicitacoes() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Solicitações de Convênios</h1>
+            <h1 className="text-3xl font-bold text-foreground">Protocolos</h1>
             <p className="mt-1 text-muted-foreground">
-              Cadastre e gerencie solicitações de convênios dos colaboradores
+              Cadastre e gerencie protocolos de convênios dos colaboradores
             </p>
           </div>
           <div className="flex gap-3">

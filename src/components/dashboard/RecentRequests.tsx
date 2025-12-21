@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { benefitTypeLabels } from '@/types/benefits';
 import { StatusBadge } from '@/components/ui/status-badge';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import type { BenefitStatus, BenefitType } from '@/types/benefits';
 
 interface RecentRequest {
@@ -18,6 +19,7 @@ interface RecentRequest {
 }
 
 export function RecentRequests() {
+  const navigate = useNavigate();
   const [requests, setRequests] = useState<RecentRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -92,14 +94,18 @@ export function RecentRequests() {
     );
   }
 
+  const handleViewProtocol = (protocolId: string) => {
+    navigate(`/solicitacoes?protocol=${protocolId}`);
+  };
+
   if (requests.length === 0) {
     return (
       <div className="rounded-xl border border-border bg-card animate-slide-up" style={{ animationDelay: '200ms' }}>
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
-          <h3 className="text-base sm:text-lg font-semibold text-foreground">Solicitações Recentes</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-foreground">Protocolos Recentes</h3>
         </div>
         <div className="p-6 sm:p-8 text-center text-muted-foreground text-sm">
-          Nenhuma solicitação recente encontrada
+          Nenhum protocolo recente encontrado
         </div>
       </div>
     );
@@ -108,12 +114,12 @@ export function RecentRequests() {
   return (
     <div className="rounded-xl border border-border bg-card animate-slide-up" style={{ animationDelay: '200ms' }}>
       <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
-        <h3 className="text-base sm:text-lg font-semibold text-foreground">Solicitações Recentes</h3>
+        <h3 className="text-base sm:text-lg font-semibold text-foreground">Protocolos Recentes</h3>
         <Link 
           to="/solicitacoes" 
           className="flex items-center gap-1 text-xs sm:text-sm font-medium text-primary hover:text-primary/80 transition-colors shrink-0"
         >
-          <span className="hidden sm:inline">Ver todas</span>
+          <span className="hidden sm:inline">Ver todos</span>
           <span className="sm:hidden">Ver</span>
           <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
         </Link>
@@ -133,11 +139,20 @@ export function RecentRequests() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap hidden md:block">
                 {new Date(request.created_at).toLocaleDateString('pt-BR')}
               </span>
               <StatusBadge status={request.status} />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 hover:bg-primary/10 hover:text-primary"
+                onClick={() => handleViewProtocol(request.id)}
+                title="Ver detalhes"
+              >
+                <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+              </Button>
             </div>
           </div>
         ))}
