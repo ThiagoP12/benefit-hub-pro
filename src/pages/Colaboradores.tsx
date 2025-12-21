@@ -251,37 +251,27 @@ export default function Colaboradores() {
                   </div>
                 </div>
                 
-                <div className="mt-4 space-y-2">
-                  {profile.birthday && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4 shrink-0" />
-                      <span className="truncate">Aniversário: {profile.birthday}</span>
-                    </div>
-                  )}
-                  {profile.phone && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Phone className="h-4 w-4 shrink-0" />
-                      <span className="truncate">{profile.phone}</span>
-                    </div>
-                  )}
-                  {profile.units && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Building2 className="h-4 w-4 shrink-0" />
-                      <span className="truncate">{profile.units.name}</span>
-                    </div>
-                  )}
-                  {profile.position && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Briefcase className="h-4 w-4 shrink-0" />
-                      <span className="truncate">{profile.position}</span>
-                    </div>
-                  )}
-                  {profile.departamento && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Building2 className="h-4 w-4 opacity-70 shrink-0" />
-                      <span className="text-xs truncate">{DEPARTAMENTOS_LABELS[profile.departamento] || profile.departamento}</span>
-                    </div>
-                  )}
+                <div className="mt-4 space-y-2 min-h-[120px]">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground h-5">
+                    <Calendar className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{profile.birthday ? `Aniversário: ${profile.birthday}` : '-'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground h-5">
+                    <Phone className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{profile.phone || '-'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground h-5">
+                    <Building2 className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{profile.units?.name || '-'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground h-5">
+                    <Briefcase className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{profile.position || '-'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground h-5">
+                    <Building2 className="h-4 w-4 opacity-70 shrink-0" />
+                    <span className="text-xs truncate">{profile.departamento ? (DEPARTAMENTOS_LABELS[profile.departamento] || profile.departamento) : '-'}</span>
+                  </div>
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">

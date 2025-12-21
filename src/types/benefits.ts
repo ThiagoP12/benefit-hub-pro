@@ -58,13 +58,13 @@ export interface Log {
 }
 
 export const benefitTypeLabels: Record<BenefitType, string> = {
-  autoescola: '🚗 Autoescola',
-  farmacia: '💊 Farmácia',
-  oficina: '🔧 Oficina',
-  vale_gas: '⛽ Vale Gás',
-  papelaria: '📝 Papelaria',
-  otica: '👓 Ótica',
-  outros: '📋 Outros',
+  autoescola: 'Autoescola',
+  farmacia: 'Farmácia',
+  oficina: 'Oficina',
+  vale_gas: 'Vale Gás',
+  papelaria: 'Papelaria',
+  otica: 'Ótica',
+  outros: 'Outros',
 };
 
 export const statusLabels: Record<BenefitStatus, string> = {
@@ -85,12 +85,12 @@ export const statusFilterLabels: Record<Exclude<BenefitStatus, 'concluida'>, str
 
 // Benefit types without "outros" for filters
 export const benefitTypeFilterLabels: Record<Exclude<BenefitType, 'outros'>, string> = {
-  autoescola: '🚗 Autoescola',
-  farmacia: '💊 Farmácia',
-  oficina: '🔧 Oficina',
-  vale_gas: '⛽ Vale Gás',
-  papelaria: '📝 Papelaria',
-  otica: '👓 Ótica',
+  autoescola: 'Autoescola',
+  farmacia: 'Farmácia',
+  oficina: 'Oficina',
+  vale_gas: 'Vale Gás',
+  papelaria: 'Papelaria',
+  otica: 'Ótica',
 };
 
 export const roleLabels: Record<UserRole, string> = {

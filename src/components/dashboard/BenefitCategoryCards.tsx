@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Car, Pill, Wrench, Fuel, Pencil, Glasses } from 'lucide-react';
+import { Car, Pill, Wrench, Cylinder, Pencil, Glasses } from 'lucide-react';
 import { BenefitType, benefitTypeLabels } from '@/types/benefits';
 import { cn } from '@/lib/utils';
 import { BenefitCategoryPieDialog } from './BenefitCategoryPieDialog';
@@ -12,7 +12,7 @@ const benefitConfig: Record<Exclude<BenefitType, 'outros'>, { icon: React.Elemen
   autoescola: { icon: Car, label: 'Autoescola' },
   farmacia: { icon: Pill, label: 'Farmácia' },
   oficina: { icon: Wrench, label: 'Oficina' },
-  vale_gas: { icon: Fuel, label: 'Vale Gás' },
+  vale_gas: { icon: Cylinder, label: 'Vale Gás' },
   papelaria: { icon: Pencil, label: 'Papelaria' },
   otica: { icon: Glasses, label: 'Óculos' },
 };

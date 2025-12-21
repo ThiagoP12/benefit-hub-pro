@@ -240,6 +240,33 @@ export type Database = {
           },
         ]
       }
+      sla_configs: {
+        Row: {
+          benefit_type: string
+          created_at: string
+          green_hours: number
+          id: string
+          updated_at: string
+          yellow_hours: number
+        }
+        Insert: {
+          benefit_type: string
+          created_at?: string
+          green_hours?: number
+          id?: string
+          updated_at?: string
+          yellow_hours?: number
+        }
+        Update: {
+          benefit_type?: string
+          created_at?: string
+          green_hours?: number
+          id?: string
+          updated_at?: string
+          yellow_hours?: number
+        }
+        Relationships: []
+      }
       units: {
         Row: {
           code: string

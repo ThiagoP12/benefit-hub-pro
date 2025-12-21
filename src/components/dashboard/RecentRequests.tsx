@@ -175,9 +175,9 @@ export function RecentRequests() {
               {/* Info */}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold text-foreground truncate">{request.full_name}</p>
+                  <p className="text-sm font-bold text-foreground truncate">{request.full_name}</p>
                   <span className="text-xs text-muted-foreground hidden sm:inline">•</span>
-                  <span className="text-xs text-info font-mono hidden sm:inline">{request.protocol}</span>
+                  <span className="text-xs font-bold text-foreground font-mono hidden sm:inline">{request.protocol}</span>
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                   <span className={cn(
