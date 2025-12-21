@@ -26,7 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Search, Filter, Download, Eye, Calendar as CalendarIcon, ArrowUpDown, Eraser, Clock } from 'lucide-react';
+import { Search, Filter, Download, Eye, Calendar as CalendarIcon, ArrowUpDown, Eraser, Clock, Car, Pill, Wrench, Flame, BookOpen, Glasses, HelpCircle } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
@@ -56,6 +56,30 @@ interface Unit {
   id: string;
   name: string;
   code: string;
+}
+
+const benefitTypeConfig: Record<BenefitType, { icon: React.ElementType; colorClass: string }> = {
+  autoescola: { icon: Car, colorClass: 'bg-[hsl(var(--benefit-autoescola))] text-[hsl(var(--benefit-autoescola-icon))]' },
+  farmacia: { icon: Pill, colorClass: 'bg-[hsl(var(--benefit-farmacia))] text-[hsl(var(--benefit-farmacia-icon))]' },
+  oficina: { icon: Wrench, colorClass: 'bg-[hsl(var(--benefit-oficina))] text-[hsl(var(--benefit-oficina-icon))]' },
+  vale_gas: { icon: Flame, colorClass: 'bg-[hsl(var(--benefit-vale-gas))] text-[hsl(var(--benefit-vale-gas-icon))]' },
+  papelaria: { icon: BookOpen, colorClass: 'bg-[hsl(var(--benefit-papelaria))] text-[hsl(var(--benefit-papelaria-icon))]' },
+  otica: { icon: Glasses, colorClass: 'bg-[hsl(var(--benefit-otica))] text-[hsl(var(--benefit-otica-icon))]' },
+  outros: { icon: HelpCircle, colorClass: 'bg-muted text-muted-foreground' },
+};
+
+function getSlaStatus(createdAt: string): { colorClass: string; label: string } {
+  const now = new Date();
+  const created = new Date(createdAt);
+  const diffHours = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
+  
+  if (diffHours < 2) {
+    return { colorClass: 'bg-success', label: 'No prazo' };
+  } else if (diffHours < 6) {
+    return { colorClass: 'bg-warning', label: 'Atenção' };
+  } else {
+    return { colorClass: 'bg-destructive', label: 'Atrasado' };
+  }
 }
 
 type SortField = 'created_at' | 'full_name' | 'status' | 'benefit_type';
@@ -616,25 +640,56 @@ export default function Solicitacoes() {
               ) : (
                 paginatedRequests.map((request, idx) => {
                   const globalIndex = (currentPage - 1) * itemsPerPage + idx;
+                  const config = benefitTypeConfig[request.benefit_type];
+                  const TypeIcon = config.icon;
+                  const sla = getSlaStatus(request.created_at);
+                  const isOpenStatus = request.status === 'aberta' || request.status === 'em_analise';
+                  
                   return (
-                    <TableRow key={request.id} className="hover:bg-muted/30 transition-colors">
-                      <TableCell className="font-mono text-sm">{request.protocol}</TableCell>
+                    <TableRow 
+                      key={request.id} 
+                      className={cn(
+                        "transition-all duration-200 hover:bg-accent/50 group",
+                        idx % 2 === 1 && "bg-muted/30"
+                      )}
+                    >
+                      <TableCell className="font-mono text-sm text-primary">{request.protocol}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                          <div className={cn(
+                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-semibold transition-transform group-hover:scale-105",
+                            config.colorClass
+                          )}>
                             {request.profiles?.full_name?.split(' ').map((n) => n[0]).join('').slice(0, 2) || '??'}
                           </div>
                           <span className="font-medium truncate max-w-[150px]">{request.profiles?.full_name || 'Usuário'}</span>
                         </div>
                       </TableCell>
-                      <TableCell>{benefitTypeLabels[request.benefit_type]}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className={cn(
+                            "flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
+                            config.colorClass
+                          )}>
+                            <TypeIcon className="h-4 w-4" />
+                          </div>
+                          <span className="text-sm">{benefitTypeLabels[request.benefit_type]}</span>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <StatusBadge status={request.status} />
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Clock className="h-3 w-3 shrink-0" />
-                          <span className="truncate">{getSLATime(request.created_at)}</span>
+                        <div className="flex items-center gap-2">
+                          {isOpenStatus && (
+                            <div className={cn("h-2 w-2 rounded-full shrink-0", sla.colorClass)} />
+                          )}
+                          <span className={cn(
+                            "text-sm",
+                            isOpenStatus && sla.colorClass === 'bg-destructive' ? 'text-destructive font-medium' : 'text-muted-foreground'
+                          )}>
+                            {getSLATime(request.created_at)}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -644,7 +699,7 @@ export default function Solicitacoes() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 shrink-0 hover:bg-primary/10 hover:text-primary"
+                          className="h-8 w-8 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity hover:bg-primary/10 hover:text-primary"
                           onClick={() => handleViewDetails(request.id, globalIndex)}
                           title="Ver detalhes"
                         >
