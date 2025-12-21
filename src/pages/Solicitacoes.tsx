@@ -26,11 +26,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Search, Filter, Download, Eye, Calendar, ArrowUpDown, ExternalLink, Eraser, Clock } from 'lucide-react';
+import { Search, Filter, Download, Eye, Calendar, ArrowUpDown, Eraser, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { formatPhone, unformatPhone, getWhatsAppLink, getRelativeTime, getSLATime } from '@/lib/formatters';
+import { getSLATime } from '@/lib/formatters';
 
 interface BenefitRequest {
   id: string;
@@ -43,7 +43,14 @@ interface BenefitRequest {
     full_name: string;
     phone: string | null;
     cpf: string | null;
+    unit_id: string | null;
   } | null;
+}
+
+interface Unit {
+  id: string;
+  name: string;
+  code: string;
 }
 
 type SortField = 'created_at' | 'full_name' | 'status' | 'benefit_type';
@@ -57,9 +64,10 @@ export default function Solicitacoes() {
     return urlStatus || 'all';
   });
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [unitFilter, setUnitFilter] = useState<string>('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [whatsappFilter, setWhatsappFilter] = useState('');
+  const [units, setUnits] = useState<Unit[]>([]);
   const [requests, setRequests] = useState<BenefitRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -74,7 +82,13 @@ export default function Solicitacoes() {
 
   useEffect(() => {
     fetchRequests();
+    fetchUnits();
   }, []);
+
+  const fetchUnits = async () => {
+    const { data } = await supabase.from('units').select('*').order('name');
+    if (data) setUnits(data);
+  };
 
   const fetchRequests = async () => {
     const { data: requestsData, error: requestsError } = await supabase
@@ -93,7 +107,7 @@ export default function Solicitacoes() {
     const { data: profilesData, error: profilesError } = userIds.length
       ? await supabase
           .from('profiles')
-          .select('user_id, full_name, phone, cpf')
+          .select('user_id, full_name, phone, cpf, unit_id')
           .in('user_id', userIds)
       : { data: [], error: null };
 
@@ -107,7 +121,7 @@ export default function Solicitacoes() {
       const profile = profilesMap.get(request.user_id);
       return {
         ...request,
-        profiles: profile ? { full_name: profile.full_name, phone: profile.phone, cpf: profile.cpf } : null,
+        profiles: profile ? { full_name: profile.full_name, phone: profile.phone, cpf: profile.cpf, unit_id: profile.unit_id } : null,
       };
     });
 
@@ -115,13 +129,35 @@ export default function Solicitacoes() {
     setLoading(false);
   };
 
-  const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (!value) {
-      setWhatsappFilter('');
+  const handleExport = () => {
+    if (filteredRequests.length === 0) {
+      toast.error('Nenhum dado para exportar');
       return;
     }
-    setWhatsappFilter(formatPhone(value));
+
+    const headers = ['Protocolo', 'Colaborador', 'CPF', 'Tipo', 'Status', 'Data'];
+    const rows = filteredRequests.map((r) => [
+      r.protocol,
+      r.profiles?.full_name || 'N/A',
+      r.profiles?.cpf || 'N/A',
+      benefitTypeLabels[r.benefit_type],
+      statusLabels[r.status],
+      new Date(r.created_at).toLocaleDateString('pt-BR'),
+    ]);
+
+    const csvContent = [
+      headers.join(';'),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(';')),
+    ].join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `solicitacoes_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success('Exportação realizada com sucesso!');
   };
 
   const filteredRequests = useMemo(() => {
@@ -151,16 +187,23 @@ export default function Solicitacoes() {
 
       const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
       const matchesType = typeFilter === 'all' || request.benefit_type === typeFilter;
+      const matchesUnit = unitFilter === 'all' || request.profiles?.unit_id === unitFilter;
 
-      const whatsappNumbers = unformatPhone(whatsappFilter);
-      const phoneClean = request.profiles?.phone?.replace(/\D/g, '') || '';
-      const matchesWhatsapp = !whatsappNumbers || phoneClean.includes(whatsappNumbers);
+      // Fix date filtering - parse the date string properly and compare dates only
+      let matchesStartDate = true;
+      let matchesEndDate = true;
+      
+      if (startDate) {
+        const requestDateOnly = new Date(request.created_at).toISOString().split('T')[0];
+        matchesStartDate = requestDateOnly >= startDate;
+      }
+      
+      if (endDate) {
+        const requestDateOnly = new Date(request.created_at).toISOString().split('T')[0];
+        matchesEndDate = requestDateOnly <= endDate;
+      }
 
-      const requestDate = new Date(request.created_at);
-      const matchesStartDate = !startDate || requestDate >= new Date(startDate);
-      const matchesEndDate = !endDate || requestDate <= new Date(endDate + 'T23:59:59');
-
-      return matchesStatus && matchesType && matchesWhatsapp && matchesStartDate && matchesEndDate;
+      return matchesStatus && matchesType && matchesUnit && matchesStartDate && matchesEndDate;
     });
 
     // Ordenação
@@ -186,7 +229,7 @@ export default function Solicitacoes() {
     });
 
     return result;
-  }, [requests, search, statusFilter, typeFilter, whatsappFilter, startDate, endDate, sortField, sortOrder]);
+  }, [requests, search, statusFilter, typeFilter, unitFilter, startDate, endDate, sortField, sortOrder]);
 
   const paginatedRequests = filteredRequests.slice(
     (currentPage - 1) * itemsPerPage,
@@ -318,9 +361,9 @@ export default function Solicitacoes() {
     setSearch('');
     setStatusFilter('all');
     setTypeFilter('all');
+    setUnitFilter('all');
     setStartDate('');
     setEndDate('');
-    setWhatsappFilter('');
     setCurrentPage(1);
     // Clear URL params
     setSearchParams({});
@@ -363,7 +406,7 @@ export default function Solicitacoes() {
           </div>
           <div className="flex gap-3">
             <NewBenefitDialog onSuccess={fetchRequests} />
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2" onClick={handleExport}>
               <Download className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">Exportar</span>
             </Button>
@@ -440,14 +483,20 @@ export default function Solicitacoes() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">WhatsApp</Label>
-              <Input
-                placeholder="(00) 00000-0000"
-                value={whatsappFilter}
-                onChange={handleWhatsappChange}
-                className="h-9"
-                maxLength={15}
-              />
+              <Label className="text-xs text-muted-foreground">Revenda</Label>
+              <Select value={unitFilter} onValueChange={setUnitFilter}>
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Revenda" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {units.map((unit) => (
+                    <SelectItem key={unit.id} value={unit.id}>
+                      {unit.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-1.5 flex flex-col justify-end">
@@ -471,7 +520,6 @@ export default function Solicitacoes() {
               <TableRow className="bg-muted/50">
                 <TableHead className="font-semibold">Protocolo</TableHead>
                 <SortableHeader field="full_name">Colaborador</SortableHeader>
-                <TableHead className="font-semibold">WhatsApp</TableHead>
                 <SortableHeader field="benefit_type">Tipo</SortableHeader>
                 <SortableHeader field="status">Status</SortableHeader>
                 <TableHead className="font-semibold">SLA</TableHead>
@@ -485,7 +533,6 @@ export default function Solicitacoes() {
                   <TableRow key={i}>
                     <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-28" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                     <TableCell><Skeleton className="h-4 w-16" /></TableCell>
@@ -495,7 +542,7 @@ export default function Solicitacoes() {
                 ))
               ) : filteredRequests.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     Nenhuma solicitação encontrada
                   </TableCell>
                 </TableRow>
@@ -512,21 +559,6 @@ export default function Solicitacoes() {
                           </div>
                           <span className="font-medium truncate max-w-[150px]">{request.profiles?.full_name || 'Usuário'}</span>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        {request.profiles?.phone ? (
-                          <a
-                            href={getWhatsAppLink(request.profiles.phone)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
-                          >
-                            <span className="truncate">{request.profiles.phone}</span>
-                            <ExternalLink className="h-3 w-3 shrink-0" />
-                          </a>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
                       </TableCell>
                       <TableCell>{benefitTypeLabels[request.benefit_type]}</TableCell>
                       <TableCell>
