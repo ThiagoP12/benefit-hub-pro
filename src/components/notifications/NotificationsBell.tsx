@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 interface Notification {
   id: string;
@@ -23,10 +24,49 @@ interface Notification {
   created_at: string;
 }
 
+// Create a simple notification sound using Web Audio API
+const playNotificationSound = () => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    // Create a pleasant two-tone notification sound
+    const playTone = (frequency: number, startTime: number, duration: number) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = frequency;
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.02);
+      gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
+      
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration);
+    };
+    
+    const now = audioContext.currentTime;
+    playTone(880, now, 0.15); // A5
+    playTone(1108.73, now + 0.15, 0.2); // C#6
+  } catch (error) {
+    console.log('Audio not available');
+  }
+};
+
 export function NotificationsBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
+  const [hasNewNotification, setHasNewNotification] = useState(false);
+  const bellRef = useRef<HTMLButtonElement>(null);
+
+  const triggerBellAnimation = useCallback(() => {
+    setHasNewNotification(true);
+    setTimeout(() => setHasNewNotification(false), 1000);
+  }, []);
 
   useEffect(() => {
     fetchNotifications();
@@ -45,6 +85,20 @@ export function NotificationsBell() {
           const newNotification = payload.new as Notification;
           setNotifications((prev) => [newNotification, ...prev]);
           setUnreadCount((prev) => prev + 1);
+          
+          // Play sound and animate bell
+          playNotificationSound();
+          triggerBellAnimation();
+          
+          // Show toast notification
+          toast.info(newNotification.title, {
+            description: newNotification.message,
+            duration: 5000,
+            action: {
+              label: 'Ver',
+              onClick: () => setOpen(true),
+            },
+          });
         }
       )
       .subscribe();
@@ -52,7 +106,7 @@ export function NotificationsBell() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [triggerBellAnimation]);
 
   const fetchNotifications = async () => {
     const { data, error } = await supabase
@@ -119,23 +173,37 @@ export function NotificationsBell() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative shrink-0 text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent">
-          <Bell className="h-5 w-5 shrink-0" />
+        <Button 
+          ref={bellRef}
+          variant="ghost" 
+          size="icon" 
+          className={cn(
+            "relative shrink-0 text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent transition-transform",
+            hasNewNotification && "animate-bell-shake"
+          )}
+        >
+          <Bell className={cn(
+            "h-5 w-5 shrink-0 transition-all",
+            hasNewNotification && "text-primary"
+          )} />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-medium">
+            <span className={cn(
+              "absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-medium",
+              hasNewNotification && "animate-pulse"
+            )}>
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
           <h4 className="font-semibold text-sm">Notificações</h4>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs h-auto py-1 px-2"
+              className="text-xs h-auto py-1 px-2 text-primary hover:text-primary"
               onClick={markAllAsRead}
             >
               Marcar todas como lidas
@@ -145,8 +213,11 @@ export function NotificationsBell() {
         <ScrollArea className="h-[300px]">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-8 text-muted-foreground">
-              <Bell className="h-8 w-8 mb-2 opacity-50 shrink-0" />
-              <p className="text-sm">Nenhuma notificação</p>
+              <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-3">
+                <Bell className="h-8 w-8 opacity-50 shrink-0" />
+              </div>
+              <p className="text-sm font-medium">Nenhuma notificação</p>
+              <p className="text-xs mt-1">Você será notificado sobre novos chamados</p>
             </div>
           ) : (
             <div className="divide-y divide-border">
