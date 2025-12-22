@@ -83,6 +83,47 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_limits: {
+        Row: {
+          benefit_type: string | null
+          created_at: string
+          id: string
+          limit_amount: number
+          partnership_id: string | null
+          period_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          benefit_type?: string | null
+          created_at?: string
+          id?: string
+          limit_amount?: number
+          partnership_id?: string | null
+          period_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          benefit_type?: string | null
+          created_at?: string
+          id?: string
+          limit_amount?: number
+          partnership_id?: string | null
+          period_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_limits_partnership_id_fkey"
+            columns: ["partnership_id"]
+            isOneToOne: false
+            referencedRelation: "partnerships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       logs: {
         Row: {
           action: string
@@ -146,6 +187,102 @@ export type Database = {
           title?: string
           type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      partnership_usage: {
+        Row: {
+          amount: number
+          benefit_request_id: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          partnership_id: string
+          usage_date: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          benefit_request_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          partnership_id: string
+          usage_date?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          benefit_request_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          partnership_id?: string
+          usage_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partnership_usage_benefit_request_id_fkey"
+            columns: ["benefit_request_id"]
+            isOneToOne: false
+            referencedRelation: "benefit_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partnership_usage_partnership_id_fkey"
+            columns: ["partnership_id"]
+            isOneToOne: false
+            referencedRelation: "partnerships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partnerships: {
+        Row: {
+          address: string | null
+          city: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          state: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          state?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          state?: string | null
+          type?: string
+          updated_at?: string
         }
         Relationships: []
       }
