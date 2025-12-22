@@ -89,6 +89,56 @@ export type Database = {
         }
         Relationships: []
       }
+      collaborator_documents: {
+        Row: {
+          created_at: string
+          document_name: string
+          document_type: string
+          expiration_date: string | null
+          file_name: string
+          file_url: string
+          id: string
+          notes: string | null
+          profile_id: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_name: string
+          document_type: string
+          expiration_date?: string | null
+          file_name: string
+          file_url: string
+          id?: string
+          notes?: string | null
+          profile_id: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_name?: string
+          document_type?: string
+          expiration_date?: string | null
+          file_name?: string
+          file_url?: string
+          id?: string
+          notes?: string | null
+          profile_id?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collaborator_documents_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credit_limits: {
         Row: {
           benefit_type: string | null
