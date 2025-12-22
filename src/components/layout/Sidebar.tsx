@@ -14,6 +14,7 @@ import {
   Moon,
   Sun,
   UserCog,
+  ClipboardList,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -60,6 +61,12 @@ const navigation: NavItem[] = [
     name: 'Usuários', 
     href: '/usuarios', 
     icon: UserCog,
+    allowedRoles: ['admin']
+  },
+  { 
+    name: 'Auditoria', 
+    href: '/auditoria', 
+    icon: ClipboardList,
     allowedRoles: ['admin']
   },
   { 
