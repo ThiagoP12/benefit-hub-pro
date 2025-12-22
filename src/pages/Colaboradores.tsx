@@ -4,7 +4,7 @@ import { roleLabels, UserRole } from '@/types/benefits';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Building2, Calendar, Phone, Briefcase, History } from 'lucide-react';
+import { Search, Building2, Calendar, Phone, Briefcase, History, Wallet } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NewColaboradorDialog } from '@/components/colaboradores/NewColaboradorDialog';
@@ -45,6 +45,8 @@ interface Profile {
   position: string | null;
   unit_id: string | null;
   departamento: string | null;
+  credit_limit: number | null;
+  credit_used: number;
   units: {
     name: string;
   } | null;
@@ -76,7 +78,7 @@ export default function Colaboradores() {
     while (hasMore) {
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, user_id, full_name, cpf, birthday, phone, gender, position, unit_id, departamento')
+        .select('id, user_id, full_name, cpf, birthday, phone, gender, position, unit_id, departamento, credit_limit')
         .order('full_name')
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
@@ -130,6 +132,21 @@ export default function Colaboradores() {
         .map((r) => r.user_id)
     );
 
+    // Buscar benefícios aprovados/concluídos para calcular uso
+    const userIds = allProfiles.map(p => p.user_id);
+    const { data: approvedBenefits } = await supabase
+      .from('benefit_requests')
+      .select('user_id, approved_value')
+      .in('user_id', userIds)
+      .in('status', ['aprovada', 'concluida']);
+
+    // Calcular uso por usuário
+    const usageByUser: Record<string, number> = {};
+    approvedBenefits?.forEach((benefit) => {
+      const userId = benefit.user_id;
+      usageByUser[userId] = (usageByUser[userId] || 0) + (benefit.approved_value || 0);
+    });
+
     // Combinar dados e filtrar usuários do sistema
     const profilesWithRelations = allProfiles
       .filter((profile) => !systemUserIds.has(profile.user_id)) // Excluir usuários do sistema
@@ -141,6 +158,7 @@ export default function Colaboradores() {
           ...profile,
           units: unit ? { name: unit.name } : null,
           user_roles: roles,
+          credit_used: usageByUser[profile.user_id] || 0,
         };
       });
 
@@ -272,6 +290,18 @@ export default function Colaboradores() {
                     <Building2 className="h-4 w-4 opacity-70 shrink-0" />
                     <span className="text-xs truncate">{profile.departamento ? (DEPARTAMENTOS_LABELS[profile.departamento] || profile.departamento) : '-'}</span>
                   </div>
+                  {/* Limite de Crédito */}
+                  <div className="flex items-center gap-2 text-sm h-5 mt-2">
+                    <Wallet className="h-4 w-4 shrink-0 text-primary" />
+                    <span className={`font-medium ${
+                      profile.credit_limit && profile.credit_used >= profile.credit_limit 
+                        ? 'text-destructive' 
+                        : 'text-foreground'
+                    }`}>
+                      R$ {profile.credit_used.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} / 
+                      R$ {(profile.credit_limit || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
@@ -306,6 +336,7 @@ export default function Colaboradores() {
                         position: profile.position,
                         unit_id: profile.unit_id,
                         departamento: profile.departamento,
+                        credit_limit: profile.credit_limit,
                       }}
                       onSuccess={fetchProfiles}
                     />

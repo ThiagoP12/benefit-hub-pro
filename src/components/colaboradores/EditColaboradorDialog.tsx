@@ -26,6 +26,7 @@ interface Profile {
   position: string | null;
   unit_id: string | null;
   departamento: string | null;
+  credit_limit: number | null;
 }
 
 const DEPARTAMENTOS = [
@@ -67,6 +68,7 @@ export function EditColaboradorDialog({
     phone: profile.phone || '',
     gender: profile.gender || '',
     position: profile.position || '',
+    credit_limit: profile.credit_limit?.toString() || '',
   });
 
   useEffect(() => {
@@ -82,6 +84,7 @@ export function EditColaboradorDialog({
         phone: profile.phone || '',
         gender: profile.gender || '',
         position: profile.position || '',
+        credit_limit: profile.credit_limit?.toString() || '',
       });
     }
   }, [open, profile]);
@@ -158,6 +161,7 @@ export function EditColaboradorDialog({
           position: formData.position,
           unit_id: formData.unit_id,
           departamento: formData.departamento,
+          credit_limit: formData.credit_limit ? parseFloat(formData.credit_limit.replace(',', '.')) : 0,
         })
         .eq('id', profile.id);
 
@@ -307,6 +311,21 @@ export function EditColaboradorDialog({
               value={formData.position}
               onChange={(e) => setFormData({ ...formData, position: e.target.value })}
               placeholder="Ex: Analista, Gerente, etc."
+            />
+          </div>
+
+          {/* 9. Limite de Crédito */}
+          <div className="space-y-2">
+            <Label htmlFor="credit_limit">Limite de Crédito (R$)</Label>
+            <Input
+              id="credit_limit"
+              type="text"
+              value={formData.credit_limit}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^\d,\.]/g, '');
+                setFormData({ ...formData, credit_limit: value });
+              }}
+              placeholder="0,00"
             />
           </div>
 
