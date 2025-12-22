@@ -26,6 +26,7 @@ export type Database = {
           created_at: string
           details: string | null
           id: string
+          paid_installments: number | null
           pdf_file_name: string | null
           pdf_url: string | null
           protocol: string
@@ -34,6 +35,7 @@ export type Database = {
           reviewed_at: string | null
           reviewed_by: string | null
           status: Database["public"]["Enums"]["benefit_status"]
+          total_installments: number | null
           updated_at: string
           user_id: string
         }
@@ -48,6 +50,7 @@ export type Database = {
           created_at?: string
           details?: string | null
           id?: string
+          paid_installments?: number | null
           pdf_file_name?: string | null
           pdf_url?: string | null
           protocol: string
@@ -56,6 +59,7 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["benefit_status"]
+          total_installments?: number | null
           updated_at?: string
           user_id: string
         }
@@ -70,6 +74,7 @@ export type Database = {
           created_at?: string
           details?: string | null
           id?: string
+          paid_installments?: number | null
           pdf_file_name?: string | null
           pdf_url?: string | null
           protocol?: string
@@ -78,6 +83,7 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: Database["public"]["Enums"]["benefit_status"]
+          total_installments?: number | null
           updated_at?: string
           user_id?: string
         }
