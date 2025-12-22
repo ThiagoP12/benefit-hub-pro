@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 import { LogDetailsSheet } from '@/components/auditoria/LogDetailsSheet';
-import { Search, Clock, User, FileText, Edit, Trash2, Plus, CreditCard, CalendarIcon, X, Filter } from 'lucide-react';
+import { Search, Clock, User, FileText, Edit, Trash2, Plus, CreditCard, CalendarIcon, X, Filter, Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -38,6 +38,8 @@ const actionLabels: Record<string, { label: string; color: string; icon: React.C
   credit_limit_updated: { label: 'Limite Alterado', color: 'bg-warning/20 text-warning border-warning/30', icon: CreditCard },
   collaborator_created: { label: 'Colaborador Criado', color: 'bg-green-500/20 text-green-500 border-green-500/30', icon: Plus },
   collaborator_deleted: { label: 'Colaborador Excluído', color: 'bg-destructive/20 text-destructive border-destructive/30', icon: Trash2 },
+  document_uploaded: { label: 'Documento Enviado', color: 'bg-cyan-500/20 text-cyan-500 border-cyan-500/30', icon: Upload },
+  document_deleted: { label: 'Documento Excluído', color: 'bg-destructive/20 text-destructive border-destructive/30', icon: Trash2 },
 };
 
 const actionOptions = Object.entries(actionLabels).map(([key, value]) => ({
