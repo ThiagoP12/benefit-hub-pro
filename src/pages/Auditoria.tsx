@@ -1,13 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, Clock, User, FileText, Edit, Trash2, Plus, CreditCard } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { PaginationControls } from '@/components/ui/pagination-controls';
+import { LogDetailsSheet } from '@/components/auditoria/LogDetailsSheet';
+import { Search, Clock, User, FileText, Edit, Trash2, Plus, CreditCard, CalendarIcon, X, Filter } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 interface LogEntry {
   id: string;
@@ -34,10 +40,28 @@ const actionLabels: Record<string, { label: string; color: string; icon: React.C
   collaborator_deleted: { label: 'Colaborador Excluído', color: 'bg-destructive/20 text-destructive border-destructive/30', icon: Trash2 },
 };
 
+const actionOptions = Object.entries(actionLabels).map(([key, value]) => ({
+  value: key,
+  label: value.label,
+}));
+
 export default function Auditoria() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Filters
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
+  const [actionFilter, setActionFilter] = useState<string>('all');
+  
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+  
+  // Details Sheet
+  const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
     fetchLogs();
@@ -46,19 +70,16 @@ export default function Auditoria() {
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      // Fetch logs
       const { data: logsData, error: logsError } = await supabase
         .from('logs')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(500);
+        .limit(1000);
 
       if (logsError) throw logsError;
 
-      // Get unique user IDs
       const userIds = [...new Set(logsData?.map(log => log.user_id).filter(Boolean))];
 
-      // Fetch user names
       let userMap: Record<string, string> = {};
       if (userIds.length > 0) {
         const { data: profiles } = await supabase
@@ -74,7 +95,6 @@ export default function Auditoria() {
         }
       }
 
-      // Merge user names into logs
       const enrichedLogs = logsData?.map(log => ({
         ...log,
         details: log.details as Record<string, unknown> | null,
@@ -89,18 +109,52 @@ export default function Auditoria() {
     }
   };
 
-  const filteredLogs = logs.filter(log => {
-    const query = searchQuery.toLowerCase();
-    const actionLabel = actionLabels[log.action]?.label || log.action;
-    const userName = log.user_name || '';
-    const details = JSON.stringify(log.details || {}).toLowerCase();
-    
-    return (
-      actionLabel.toLowerCase().includes(query) ||
-      userName.toLowerCase().includes(query) ||
-      details.includes(query)
-    );
-  });
+  const filteredLogs = useMemo(() => {
+    return logs.filter(log => {
+      // Text search
+      const query = searchQuery.toLowerCase();
+      const actionLabel = actionLabels[log.action]?.label || log.action;
+      const userName = log.user_name || '';
+      const details = JSON.stringify(log.details || {}).toLowerCase();
+      
+      const matchesSearch = 
+        actionLabel.toLowerCase().includes(query) ||
+        userName.toLowerCase().includes(query) ||
+        details.includes(query);
+      
+      if (!matchesSearch) return false;
+
+      // Action filter
+      if (actionFilter !== 'all' && log.action !== actionFilter) return false;
+
+      // Date filters
+      const logDate = new Date(log.created_at);
+      
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        if (logDate < start) return false;
+      }
+      
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        if (logDate > end) return false;
+      }
+
+      return true;
+    });
+  }, [logs, searchQuery, actionFilter, startDate, endDate]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, actionFilter, startDate, endDate]);
+
+  const paginatedLogs = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredLogs.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredLogs, currentPage, itemsPerPage]);
 
   const getActionInfo = (action: string) => {
     return actionLabels[action] || { 
@@ -134,6 +188,20 @@ export default function Auditoria() {
     return parts.length > 0 ? parts.join(' | ') : null;
   };
 
+  const clearFilters = () => {
+    setSearchQuery('');
+    setStartDate(undefined);
+    setEndDate(undefined);
+    setActionFilter('all');
+  };
+
+  const hasActiveFilters = searchQuery || startDate || endDate || actionFilter !== 'all';
+
+  const handleLogClick = (log: LogEntry) => {
+    setSelectedLog(log);
+    setSheetOpen(true);
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -145,16 +213,102 @@ export default function Auditoria() {
           </div>
         </div>
 
-        {/* Search */}
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por ação, usuário ou detalhes..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+        {/* Filters */}
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-base">Filtros</CardTitle>
+              </div>
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8">
+                  <X className="h-4 w-4 mr-1" />
+                  Limpar filtros
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              {/* Action Type Filter */}
+              <Select value={actionFilter} onValueChange={setActionFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Tipo de ação" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as ações</SelectItem>
+                  {actionOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Start Date */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "justify-start text-left font-normal",
+                      !startDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {startDate ? format(startDate, "dd/MM/yyyy") : "Data inicial"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={setStartDate}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {/* End Date */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "justify-start text-left font-normal",
+                      !endDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {endDate ? format(endDate, "dd/MM/yyyy") : "Data final"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={setEndDate}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Logs List */}
         <Card>
@@ -174,9 +328,9 @@ export default function Auditoria() {
                 Nenhum registro encontrado
               </div>
             ) : (
-              <ScrollArea className="h-[600px]">
+              <div className="space-y-4">
                 <div className="space-y-3">
-                  {filteredLogs.map((log) => {
+                  {paginatedLogs.map((log) => {
                     const actionInfo = getActionInfo(log.action);
                     const IconComponent = actionInfo.icon;
                     const detailsText = formatDetails(log);
@@ -184,7 +338,8 @@ export default function Auditoria() {
                     return (
                       <div
                         key={log.id}
-                        className="flex items-start gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                        onClick={() => handleLogClick(log)}
+                        className="flex items-start gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
                       >
                         <div className={`p-2 rounded-lg ${actionInfo.color.split(' ')[0]}`}>
                           <IconComponent className={`h-4 w-4 ${actionInfo.color.split(' ')[1]}`} />
@@ -202,7 +357,7 @@ export default function Auditoria() {
                           </div>
                           
                           {detailsText && (
-                            <p className="text-sm text-foreground mt-1">{detailsText}</p>
+                            <p className="text-sm text-foreground mt-1 truncate">{detailsText}</p>
                           )}
                           
                           <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
@@ -210,15 +365,38 @@ export default function Auditoria() {
                             <span>Por: {log.user_name}</span>
                           </div>
                         </div>
+
+                        <div className="text-xs text-muted-foreground hidden sm:block">
+                          Clique para detalhes
+                        </div>
                       </div>
                     );
                   })}
                 </div>
-              </ScrollArea>
+
+                {/* Pagination */}
+                <PaginationControls
+                  currentPage={currentPage}
+                  totalItems={filteredLogs.length}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={setCurrentPage}
+                  onItemsPerPageChange={(items) => {
+                    setItemsPerPage(items);
+                    setCurrentPage(1);
+                  }}
+                />
+              </div>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Details Sheet */}
+      <LogDetailsSheet 
+        log={selectedLog} 
+        open={sheetOpen} 
+        onOpenChange={setSheetOpen} 
+      />
     </MainLayout>
   );
 }
