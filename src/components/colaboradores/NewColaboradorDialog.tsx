@@ -150,17 +150,6 @@ export function NewColaboradorDialog({ onSuccess }: { onSuccess?: () => void }) 
         console.error('Erro ao criar role:', roleError);
       }
 
-      // Log collaborator creation
-      await supabase.rpc('create_system_log', {
-        p_action: 'collaborator_created',
-        p_entity_type: 'profile',
-        p_entity_id: profileData.id,
-        p_details: {
-          full_name: formData.full_name,
-          cpf: formData.cpf,
-        },
-      });
-
       toast.success('Colaborador cadastrado com sucesso!');
       
       setOpen(false);

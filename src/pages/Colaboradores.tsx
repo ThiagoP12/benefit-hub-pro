@@ -4,7 +4,7 @@ import { roleLabels, UserRole } from '@/types/benefits';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Building2, Calendar, Phone, Briefcase, History, Wallet, FileText } from 'lucide-react';
+import { Search, Building2, Calendar, Phone, Briefcase, History, Wallet } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NewColaboradorDialog } from '@/components/colaboradores/NewColaboradorDialog';
@@ -12,8 +12,8 @@ import { ImportCSVDialog } from '@/components/colaboradores/ImportCSVDialog';
 import { DeleteColaboradorDialog } from '@/components/colaboradores/DeleteColaboradorDialog';
 import { EditColaboradorDialog } from '@/components/colaboradores/EditColaboradorDialog';
 import { ColaboradorHistorySheet } from '@/components/colaboradores/ColaboradorHistorySheet';
-import { DocumentsSheet } from '@/components/colaboradores/DocumentsSheet';
 import { PaginationControls } from '@/components/ui/pagination-controls';
+
 const DEPARTAMENTOS_LABELS: Record<string, string> = {
   '101': '101 – PUXADA',
   '102': '102 – PUXADA',
@@ -63,8 +63,6 @@ export default function Colaboradores() {
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [selectedColaborador, setSelectedColaborador] = useState<{ user_id: string; full_name: string } | null>(null);
-  const [documentsOpen, setDocumentsOpen] = useState(false);
-  const [selectedDocProfile, setSelectedDocProfile] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     fetchProfiles();
@@ -199,11 +197,6 @@ export default function Colaboradores() {
     setCurrentPage(1);
   };
 
-  const handleOpenDocuments = (profileId: string, profileName: string) => {
-    setSelectedDocProfile({ id: profileId, name: profileName });
-    setDocumentsOpen(true);
-  };
-
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -320,15 +313,6 @@ export default function Colaboradores() {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => handleOpenDocuments(profile.id, profile.full_name)}
-                      title="Documentos"
-                    >
-                      <FileText className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
                       onClick={() => {
                         setSelectedColaborador({
                           user_id: profile.user_id,
@@ -386,16 +370,6 @@ export default function Colaboradores() {
           onOpenChange={setHistoryOpen}
           colaborador={selectedColaborador}
         />
-
-        {/* Documents Sheet */}
-        {selectedDocProfile && (
-          <DocumentsSheet
-            open={documentsOpen}
-            onOpenChange={setDocumentsOpen}
-            profileId={selectedDocProfile.id}
-            profileName={selectedDocProfile.name}
-          />
-        )}
       </div>
     </MainLayout>
   );

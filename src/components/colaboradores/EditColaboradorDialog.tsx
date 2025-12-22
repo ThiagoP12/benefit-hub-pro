@@ -150,9 +150,6 @@ export function EditColaboradorDialog({
     setLoading(true);
 
     try {
-      const oldCreditLimit = profile.credit_limit || 0;
-      const newCreditLimit = formData.credit_limit ? parseFloat(formData.credit_limit.replace(',', '.')) : 0;
-
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -164,25 +161,11 @@ export function EditColaboradorDialog({
           position: formData.position,
           unit_id: formData.unit_id,
           departamento: formData.departamento,
-          credit_limit: newCreditLimit,
+          credit_limit: formData.credit_limit ? parseFloat(formData.credit_limit.replace(',', '.')) : 0,
         })
         .eq('id', profile.id);
 
       if (error) throw error;
-
-      // Log credit limit change if it changed
-      if (oldCreditLimit !== newCreditLimit) {
-        await supabase.rpc('create_system_log', {
-          p_action: 'credit_limit_updated',
-          p_entity_type: 'profile',
-          p_entity_id: profile.id,
-          p_details: {
-            full_name: formData.full_name,
-            old_credit_limit: oldCreditLimit,
-            new_credit_limit: newCreditLimit,
-          },
-        });
-      }
 
       toast.success('Colaborador atualizado com sucesso!');
       setOpen(false);

@@ -4,7 +4,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetClose,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,7 +29,6 @@ import {
   Calendar,
   FileText,
   ExternalLink,
-  X,
 } from "lucide-react";
 import { benefitTypeLabels, type BenefitStatus } from "@/types/benefits";
 import { formatCpf } from "@/lib/utils";
@@ -276,46 +274,32 @@ export function BenefitDetailsSheet({
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* Navegação */}
-              {onNavigate && totalItems > 1 && (
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => onNavigate("prev")}
-                    disabled={!canNavigatePrev || loading}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <span className="text-xs text-muted-foreground min-w-[50px] text-center">
-                    {currentIndex + 1} / {totalItems}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => onNavigate("next")}
-                    disabled={!canNavigateNext || loading}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-              
-              {/* Botão X para fechar */}
-              <SheetClose asChild>
+            {/* Navegação */}
+            {onNavigate && totalItems > 1 && (
+              <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                  className="h-8 w-8"
+                  onClick={() => onNavigate("prev")}
+                  disabled={!canNavigatePrev || loading}
                 >
-                  <X className="h-5 w-5" />
-                  <span className="sr-only">Fechar</span>
+                  <ChevronLeft className="h-4 w-4" />
                 </Button>
-              </SheetClose>
-            </div>
+                <span className="text-xs text-muted-foreground min-w-[50px] text-center">
+                  {currentIndex + 1} / {totalItems}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => onNavigate("next")}
+                  disabled={!canNavigateNext || loading}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         </SheetHeader>
 
