@@ -13,7 +13,7 @@ import Unidades from "./pages/Unidades";
 import Usuarios from "./pages/Usuarios";
 import WhatsApp from "./pages/WhatsApp";
 import Configuracoes from "./pages/Configuracoes";
-import Convenios from "./pages/Convenios";
+import Auditoria from "./pages/Auditoria";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -64,9 +64,9 @@ const App = () => (
                   <Configuracoes />
                 </ProtectedRoute>
               } />
-              <Route path="/convenios" element={
-                <ProtectedRoute allowedRoles={['admin', 'gestor']}>
-                  <Convenios />
+              <Route path="/auditoria" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <Auditoria />
                 </ProtectedRoute>
               } />
               <Route path="*" element={<NotFound />} />
