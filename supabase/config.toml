@@ -1,10 +1,1 @@
-project_id = "wyhlezxtfhoolrvuqhfy"
-
-[functions.setup-admin]
-verify_jwt = false
-
-[functions.check-document-expiration]
-verify_jwt = false
-
-[functions.check-credit-limits]
-verify_jwt = false
+project_id = "voeahbkmjtfzxaetqnqz"
