@@ -35,6 +35,17 @@ export function DeleteColaboradorDialog({ profileId, userId, name, onSuccess }: 
         return;
       }
 
+      // Log deletion before actually deleting
+      await supabase.rpc('create_system_log', {
+        p_action: 'collaborator_deleted',
+        p_entity_type: 'profile',
+        p_entity_id: profileId,
+        p_details: {
+          full_name: name,
+          user_id: userId,
+        },
+      });
+
       // Call edge function to delete user from auth.users (cascades to profiles and user_roles)
       const response = await fetch(
         `https://wyhlezxtfhoolrvuqhfy.supabase.co/functions/v1/admin-user-management`,
