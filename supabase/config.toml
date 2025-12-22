@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.check-document-expiration]
 verify_jwt = false
+
+[functions.check-credit-limits]
+verify_jwt = false
