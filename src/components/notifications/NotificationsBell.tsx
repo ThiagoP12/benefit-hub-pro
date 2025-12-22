@@ -165,6 +165,16 @@ export function NotificationsBell() {
         return '🎉';
       case 'status_update':
         return '🔄';
+      case 'document_expired':
+        return '⚠️';
+      case 'document_expiring_critical':
+        return '🚨';
+      case 'document_expiring':
+        return '📄';
+      case 'credit_limit_warning':
+        return '💳';
+      case 'credit_limit_critical':
+        return '🔴';
       default:
         return '📌';
     }

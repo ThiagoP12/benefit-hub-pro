@@ -13,7 +13,6 @@ import { DeleteColaboradorDialog } from '@/components/colaboradores/DeleteColabo
 import { EditColaboradorDialog } from '@/components/colaboradores/EditColaboradorDialog';
 import { ColaboradorHistorySheet } from '@/components/colaboradores/ColaboradorHistorySheet';
 import { DocumentsSheet } from '@/components/colaboradores/DocumentsSheet';
-import { DocumentExpirationAlerts } from '@/components/colaboradores/DocumentExpirationAlerts';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 const DEPARTAMENTOS_LABELS: Record<string, string> = {
   '101': '101 – PUXADA',
@@ -221,9 +220,6 @@ export default function Colaboradores() {
             <NewColaboradorDialog onSuccess={fetchProfiles} />
           </div>
         </div>
-
-        {/* Document Expiration Alerts */}
-        <DocumentExpirationAlerts onViewDocument={handleOpenDocuments} />
 
         {/* Search */}
         <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
