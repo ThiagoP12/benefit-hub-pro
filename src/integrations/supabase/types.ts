@@ -324,6 +324,7 @@ export type Database = {
           birthday: string | null
           cpf: string | null
           created_at: string
+          credit_limit: number | null
           departamento: string | null
           email: string
           full_name: string
@@ -340,6 +341,7 @@ export type Database = {
           birthday?: string | null
           cpf?: string | null
           created_at?: string
+          credit_limit?: number | null
           departamento?: string | null
           email: string
           full_name: string
@@ -356,6 +358,7 @@ export type Database = {
           birthday?: string | null
           cpf?: string | null
           created_at?: string
+          credit_limit?: number | null
           departamento?: string | null
           email?: string
           full_name?: string
