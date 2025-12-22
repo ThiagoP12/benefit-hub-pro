@@ -14,7 +14,6 @@ import {
   Moon,
   Sun,
   UserCog,
-  Handshake,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -55,12 +54,6 @@ const navigation: NavItem[] = [
     name: 'Unidades', 
     href: '/unidades', 
     icon: Building2,
-    allowedRoles: ['admin', 'gestor']
-  },
-  { 
-    name: 'Convênios', 
-    href: '/convenios', 
-    icon: Handshake,
     allowedRoles: ['admin', 'gestor']
   },
   { 

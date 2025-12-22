@@ -20,7 +20,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { BenefitRequest, benefitTypeLabels, BenefitType, BenefitStatus } from '@/types/benefits';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FileText, AlertCircle, Clock, History, Filter, Download } from 'lucide-react';
+import { FileText, AlertCircle, Clock, History, Filter, Download, CreditCard, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -55,10 +55,11 @@ export function ColaboradorHistorySheet({
   onOpenChange,
   colaborador,
 }: ColaboradorHistorySheetProps) {
-  const [requests, setRequests] = useState<BenefitRequest[]>([]);
+  const [requests, setRequests] = useState<(BenefitRequest & { total_installments?: number; paid_installments?: number })[]>([]);
   const [loading, setLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [updatingInstallment, setUpdatingInstallment] = useState<string | null>(null);
 
   const filteredRequests = useMemo(() => {
     return requests.filter((req) => {
@@ -109,15 +110,43 @@ export function ColaboradorHistorySheet({
     return format(new Date(dateString), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
   };
 
+  const handlePayInstallment = async (requestId: string, currentPaid: number, total: number) => {
+    if (currentPaid >= total) return;
+    
+    setUpdatingInstallment(requestId);
+    const newPaidCount = currentPaid + 1;
+    
+    const { error } = await supabase
+      .from('benefit_requests')
+      .update({ paid_installments: newPaidCount })
+      .eq('id', requestId);
+    
+    if (error) {
+      toast.error('Erro ao registrar parcela');
+      console.error(error);
+    } else {
+      setRequests(prev => prev.map(req => 
+        req.id === requestId 
+          ? { ...req, paid_installments: newPaidCount }
+          : req
+      ));
+      toast.success(`Parcela ${newPaidCount}/${total} registrada!`);
+    }
+    setUpdatingInstallment(null);
+  };
+
   const exportToCSV = () => {
     if (!colaborador || filteredRequests.length === 0) return;
 
-    const headers = ['Protocolo', 'Tipo', 'Status', 'Valor Aprovado', 'Data', 'Motivo Recusa'];
+    const headers = ['Protocolo', 'Tipo', 'Status', 'Valor Aprovado', 'Parcelas', 'Data', 'Motivo Recusa'];
     const rows = filteredRequests.map((req) => [
       req.protocol,
       benefitTypeLabels[req.benefit_type],
       statusLabels[req.status],
       req.approved_value ? `R$ ${req.approved_value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '',
+      req.total_installments && req.total_installments > 1 
+        ? `${req.paid_installments || 0}/${req.total_installments}`
+        : 'À vista',
       format(new Date(req.created_at), 'dd/MM/yyyy HH:mm'),
       req.rejection_reason || '',
     ]);
@@ -278,6 +307,52 @@ export function ColaboradorHistorySheet({
                       </span>
                     )}
                   </div>
+
+                  {/* Parcelas - Apenas para aprovadas/concluídas com parcelas */}
+                  {(request.status === 'aprovada' || request.status === 'concluida') && 
+                   request.total_installments && request.total_installments > 1 && (
+                    <div className="flex items-center justify-between gap-2 rounded-md bg-primary/5 border border-primary/20 p-3 mt-2">
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="h-4 w-4 text-primary shrink-0" />
+                        <div className="text-sm">
+                          <span className="font-medium text-foreground">Parcelas: </span>
+                          <span className={`font-semibold ${
+                            (request.paid_installments || 0) >= request.total_installments
+                              ? 'text-emerald-600 dark:text-emerald-400'
+                              : 'text-primary'
+                          }`}>
+                            {request.paid_installments || 0}/{request.total_installments}
+                          </span>
+                          {request.approved_value && (
+                            <span className="text-muted-foreground ml-2">
+                              (R$ {(request.approved_value / request.total_installments).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {(request.paid_installments || 0) < request.total_installments && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs gap-1 border-primary/30 text-primary hover:bg-primary/10"
+                          disabled={updatingInstallment === request.id}
+                          onClick={() => handlePayInstallment(
+                            request.id, 
+                            request.paid_installments || 0, 
+                            request.total_installments || 1
+                          )}
+                        >
+                          <Check className="h-3 w-3" />
+                          Pagar
+                        </Button>
+                      )}
+                      {(request.paid_installments || 0) >= request.total_installments && (
+                        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+                          Quitado
+                        </Badge>
+                      )}
+                    </div>
+                  )}
 
                   {/* Área de Decisão Condicional */}
                   {(request.status === 'concluida' || request.status === 'aprovada') && request.pdf_url && (
