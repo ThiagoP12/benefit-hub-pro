@@ -172,9 +172,11 @@ export function NotificationsBell() {
       case 'document_expiring':
         return '📄';
       case 'credit_limit_warning':
-        return '💳';
+        return '⚠️';
       case 'credit_limit_critical':
         return '🔴';
+      case 'credit_limit_exceeded':
+        return '🚫';
       default:
         return '📌';
     }
@@ -227,7 +229,7 @@ export function NotificationsBell() {
                 <Bell className="h-8 w-8 opacity-50 shrink-0" />
               </div>
               <p className="text-sm font-medium">Nenhuma notificação</p>
-              <p className="text-xs mt-1">Você será notificado sobre novos chamados</p>
+              <p className="text-xs mt-1 text-center px-4">Você será notificado sobre novos chamados e alertas importantes</p>
             </div>
           ) : (
             <div className="divide-y divide-border">
